@@ -1,7 +1,13 @@
 module.exports = {
   root: true,
+  env: {
+    browser: true,
+    commonjs: true,
+    es6: true,
+    jest: true,
+    node: true,
+  },
   extends: ["airbnb", "airbnb/hooks", "prettier", "prettier/react"],
-  plugins: ["react-hooks"],
   rules: {
     "padding-line-between-statements": [
       "error",
