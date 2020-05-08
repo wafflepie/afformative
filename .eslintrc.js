@@ -55,7 +55,12 @@ module.exports = {
     "import/no-extraneous-dependencies": [
       "error",
       {
-        devDependencies: ["packages/**/*.test.js", "packages/**/*.config.js", "*.config.js"],
+        devDependencies: [
+          "packages/**/*.test.js",
+          "packages/**/*.config.js",
+          "*.config.js",
+          "testsSetup.js",
+        ],
       },
     ],
     "import/prefer-default-export": "off",
