@@ -1,0 +1,26 @@
+{
+  "name": "afformative",
+  "version": "0.1.0",
+  "license": "MIT",
+  "main": "lib/afformative.js",
+  "module": "es/afformative.js",
+  "unpkg": "dist/afformative.js",
+  "description": "Afformative.",
+  "repository": "https://github.com/wafflepie/afformative",
+  "contributors": [
+    "Vaclav Jancarik <vaclav.janc@gmail.com>"
+  ],
+  "dependencies": {
+    "prop-types": "^15.7.2"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.3"
+  },
+  "devDependencies": {
+    "react": "16.13.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false
+}

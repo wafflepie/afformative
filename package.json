@@ -1,0 +1,55 @@
+{
+  "name": "afformative",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "repository": "https://github.com/wafflepie/afformative",
+  "contributors": [
+    "Vaclav Jancarik <vaclav.janc@gmail.com>"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@babel/core": "7.9.6",
+    "@babel/plugin-proposal-class-properties": "7.8.3",
+    "@babel/plugin-proposal-object-rest-spread": "7.9.6",
+    "@babel/plugin-transform-modules-commonjs": "7.9.6",
+    "@babel/plugin-transform-runtime": "7.9.6",
+    "@babel/preset-env": "7.9.6",
+    "babel-core": "7.0.0-bridge.0",
+    "babel-eslint": "10.1.0",
+    "babel-jest": "26.0.1",
+    "cross-env": "7.0.2",
+    "eslint": "6.8.0",
+    "eslint-config-airbnb": "18.1.0",
+    "eslint-config-prettier": "6.11.0",
+    "eslint-plugin-import": "2.20.2",
+    "eslint-plugin-jsx-a11y": "6.2.3",
+    "eslint-plugin-react": "7.19.0",
+    "eslint-plugin-react-hooks": "4.0.0",
+    "husky": "4.2.5",
+    "jest": "26.0.1",
+    "lerna": "3.20.2",
+    "lint-staged": "10.2.2",
+    "prettier": "2.0.5",
+    "ramda": "0.27.0",
+    "ramda-extension": "0.10.3",
+    "rollup": "2.8.2",
+    "rollup-plugin-auto-external": "2.0.0",
+    "rollup-plugin-babel": "4.4.0",
+    "rollup-plugin-commonjs": "10.1.0",
+    "rollup-plugin-node-resolve": "5.2.0",
+    "rollup-plugin-replace": "2.2.0",
+    "rollup-plugin-terser": "5.3.0"
+  },
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint --ext .js ./",
+    "build": "lerna exec -- rollup -c=../../rollup.config.js",
+    "prepublish": "yarn build"
+  }
+}
