@@ -141,7 +141,7 @@ Work in progress.
 
 ## Changelog
 
-See the [CHANGELOG.md](CHANGELOG.md) file.
+See the [CHANGELOG.md](https://github.com/wafflepie/afformative/blob/master/CHANGELOG.md) file.
 
 ## License
 
