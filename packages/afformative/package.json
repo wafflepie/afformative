@@ -5,18 +5,20 @@
   "main": "lib/afformative.js",
   "module": "es/afformative.js",
   "unpkg": "dist/afformative.js",
-  "description": "Afformative.",
+  "description": "A standardized way to format values in your React components.",
   "repository": "https://github.com/wafflepie/afformative",
   "contributors": [
     "Vaclav Jancarik <vaclav.janc@gmail.com>"
   ],
   "dependencies": {
+    "invariant": "^2.2.4",
     "prop-types": "^15.7.2"
   },
   "peerDependencies": {
     "react": ">=16.8.3"
   },
   "devDependencies": {
+    "enzyme": "3.11.0",
     "react": "16.13.1"
   },
   "publishConfig": {
