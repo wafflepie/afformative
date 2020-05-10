@@ -6,6 +6,16 @@
   "module": "es/afformative.js",
   "unpkg": "dist/afformative.js",
   "description": "A standardized way to format values in your React components.",
+  "keywords": [
+    "react",
+    "formatting",
+    "formatters",
+    "format",
+    "moment",
+    "react-intl",
+    "entity",
+    "enum"
+  ],
   "repository": "https://github.com/wafflepie/afformative",
   "contributors": [
     "Vaclav Jancarik <vaclav.janc@gmail.com>"
