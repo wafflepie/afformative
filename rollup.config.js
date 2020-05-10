@@ -40,7 +40,6 @@ const INPUT_FILE = path.join(PACKAGE_ROOT_PATH, "src/index.js")
 
 const globals = {
   react: "React",
-  "prop-types": "PropTypes",
 }
 
 const globalName = getGlobalName(LERNA_PACKAGE_NAME)
