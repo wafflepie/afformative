@@ -8,13 +8,19 @@
   "description": "A standardized way to format values in your React components.",
   "keywords": [
     "react",
+    "component",
+    "components",
     "formatting",
+    "formatter",
     "formatters",
     "format",
     "moment",
     "react-intl",
     "entity",
-    "enum"
+    "enum",
+    "arbitrary",
+    "value",
+    "values"
   ],
   "repository": "https://github.com/wafflepie/afformative",
   "contributors": [
