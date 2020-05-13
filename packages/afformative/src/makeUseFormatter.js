@@ -21,8 +21,8 @@ const makeUseFormatter = (useFormat, formatterOptions = {}) => {
     "The first argument passed to `makeUseFormatter` must be a function.",
   )
 
-  const useFormatter = (...args) => {
-    const format = useFormat(...args)
+  const useFormatter = (...hookArgs) => {
+    const format = useFormat(...hookArgs)
 
     invariant(
       typeof format === "function",
