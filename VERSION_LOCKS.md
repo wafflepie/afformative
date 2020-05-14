@@ -1,4 +1,4 @@
-# Version locks
+# Version Locks
 
 This file describes reasons for why some dependencies should not be upgraded.
 

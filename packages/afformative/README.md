@@ -129,6 +129,7 @@ The `makeFormatter` factory is sufficient if your values do not depend on any ex
 const useEnumFormatter = makeUseFormatter(enumType => {
   // Resolve your data context here via React hooks.
   // `useSelector` is from `react-redux`, `useIntl` from `react-intl`.
+  // `getEnumTranslationKeys` is a made-up Redux selector factory.
   const enumTranslationKeys = useSelector(getEnumTranslationKeys(enumType))
   const intl = useIntl()
 
@@ -142,7 +143,9 @@ const useEnumFormatter = makeUseFormatter(enumType => {
 const SomeEnumFormatter = useEnumFormatter(EnumTypes.SOME_ENUM)
 ```
 
-`SomeEnumFormatter` is now usable even for static formatting because it has access to React context via a closure. Awesome, right?
+`SomeEnumFormatter` is now usable even for static formatting because it has access to React context via a closure.
+
+Awesome, right?
 
 ## API Reference
 
