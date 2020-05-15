@@ -149,57 +149,70 @@ Awesome, right?
 
 ## API Reference
 
-### Formatters
+The type signatures are written using intuitive Flow-like syntax.
 
-Formatters are the React components that are returned by `makeFormatter` and factories created by `makeUseFormatter`.
+### \<Formatter />
+
+Formatters are React components returned by `makeFormatter` and factories created by `makeUseFormatter`.
 
 #### Props
 
-- `children` (_any_): The value to format.
-- `suggestions` (_string[]_): Suggestions the formatter should take note of.
+- `children: any` The value to format.
+- `suggestions: string[]` Suggestions the formatter should take note of.
 
-#### `Formatter.format()`
+#### Statics
 
-A static method that can be used to format values without them being rendered by React.
-
-Signature: `(value, SuggestionTools) -> React.Node`
-
-#### `SuggestionTools` type
-
-Utility object passed to the formatting function.
-
-- `isSuggested` (_string -> boolean_): Predicate returning whether a suggestion was passed to the formatter.
-- `suggestions` (_string[]_): Suggestions passed to the formatter.
+- `format: (value: any, suggestions?: string[]) => React.Node` A static method that can be used to format values without them being rendered as React elements.
 
 ---
 
-### `makeFormatter()`
+### makeFormatter
+
+```js
+type SuggestionTools = {
+  isSuggested: (suggestion: string) => boolean,
+  suggestions: string[],
+}
+
+type Format = (value: any, suggestionTools: SuggestionTools) => React.Node
+type MakeFormatter = (format: Format) => Formatter
+```
 
 A factory for creating formatters which do not rely on external context.
 
-Signature: `((value, SuggestionTools) -> React.Node) -> Formatter`
-
 ---
 
-### `makeUseFormatter()`
+### makeUseFormatter
+
+```js
+type SuggestionTools = {
+  isSuggested: (suggestion: string) => boolean,
+  suggestions: string[],
+}
+
+type Format = (value: any, suggestionTools: SuggestionTools) => React.Node
+type MakeUseFormatter = ((...hookArgs: any[]) => Format) => (...hookArgs: any[]) => Formatter
+```
 
 A factory for creating formatters which can rely on external context.
 
-Signature: `((...hookArgs) -> (value, SuggestionTools) -> React.Node) -> (...hookArgs) -> Formatter`
-
 ---
 
-### `SUGGESTIONS`
+### SUGGESTIONS
 
 A wrapper object for string constants you can use as formatter suggestions.
 
-- `SUGGESTIONS.abbreviated`, indicating that the formatter should render abbreviated content.
+- `SUGGESTIONS.abbreviated`
+  - Indicating that the formatter should render abbreviated content.
   - Example usage: you are rendering a table with many columns that have limited width.
-- `SUGGESTIONS.icon`, indicating that an icon should be rendered based on the value.
+- `SUGGESTIONS.icon`
+  - Indicating that an icon should be rendered based on the value.
   - Example usage: you need to render an icon alongside the formatted value. Formatters should not be responsible for the layout markup.
-- `SUGGESTIONS.primitive`, indicating that the formatter should not return React elements.
+- `SUGGESTIONS.primitive`
+  - Indicating that the formatter should not return React elements.
   - Example usage: you need to access the rendered text for lexicographic sorting, autocompletion, or use the text as a URL slug.
-- `SUGGESTIONS.verbose`, indicating that the formatter should render verbose content.
+- `SUGGESTIONS.verbose`
+  - Indicating that the formatter should render verbose content.
   - Example usage: N/A.
 
 Please [submit an issue](https://github.com/wafflepie/afformative/issues/new) or open a pull request if you want to add a suggestion.
