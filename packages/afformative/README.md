@@ -42,7 +42,7 @@ I'll try not to bore you too much, I promise.
 
 > Thou shalt not format thy values without afformative.
 
-A formatter is a React component which accepts a value as its `children` prop. Formatters should be created solely using the `makeFormatter` and `makeUseFormatter` utility functions.
+A formatter is a React component which accepts a value as its `children` prop. Formatters should be created solely using the `makeFormatter` utility function.
 
 ```js
 import { makeFormatter } from "afformative"
@@ -60,13 +60,18 @@ import { makeFormatter } from "afformative"
 
 const IdentityFormatter = makeFormatter(value => value)
 
-const Select = ({ items, formatter: Formatter = IdentityFormatter, ...otherProps }) => (
+const Select = ({ formatter: Formatter = IdentityFormatter, items, ...otherProps }) => (
   <select {...otherProps}>
-    {items.map(item => (
-      <option key={item} value={item}>
-        <Formatter>{item}</Formatter>
-      </option>
-    ))}
+    {items.map(item => {
+      // `option` elements only accept strings, `<Formatter>{item}</Formatter>` won't work here.
+      const text = Formatter.format(item)
+
+      return (
+        <option key={item} value={item}>
+          {text}
+        </option>
+      )
+    })}
   </select>
 )
 
@@ -123,10 +128,10 @@ BooleanFormatter.format(true, [SUGGESTIONS.primitive])
 
 ### Providing Data Context
 
-The `makeFormatter` factory is sufficient if your values do not depend on any external context. Things get a bit trickier once you e.g. need to statically format values which depend on Redux state (or React context in general). Enter `makeUseFormatter`.
+Using the `makeFormatter` factory statically is sufficient if your values do not depend on any external context. Things get a bit trickier once you e.g. need to statically format values which depend on Redux state (or React context in general).
 
 ```js
-const useEnumFormatter = makeUseFormatter(enumType => {
+const useEnumFormatter = enumType => {
   // Resolve your data context here via React hooks.
   // `useSelector` is from `react-redux`, `useIntl` from `react-intl`.
   // `getEnumTranslationKeys` is a made-up Redux selector factory.
@@ -138,12 +143,12 @@ const useEnumFormatter = makeUseFormatter(enumType => {
       defaultMessage: value,
       id: enumTranslationKeys[value],
     })
-})
+}
 
 const SomeEnumFormatter = useEnumFormatter(EnumTypes.SOME_ENUM)
 ```
 
-`SomeEnumFormatter` is now usable even for static formatting because it has access to React context via a closure.
+`SomeEnumFormatter` is now usable even for static formatting, it has access to React context via a closure.
 
 Awesome, right?
 
@@ -153,16 +158,18 @@ The type signatures are written using intuitive Flow-like syntax.
 
 ### \<Formatter />
 
-Formatters are React components returned by `makeFormatter` and factories created by `makeUseFormatter`.
+Formatters are React components returned by `makeFormatter`.
 
 #### Props
 
 - `children: any` The value to format.
 - `suggestions: string[]` Suggestions the formatter should take note of.
 
+Any additional props will be passed to the `format` argument `makeFormatter` inside the second parameter (alongside suggestion tools).
+
 #### Statics
 
-- `format: (value: any, suggestions?: string[]) => React.Node` A static method that can be used to format values without them being rendered as React elements.
+- `format: (value: any, suggestions?: string[], otherProps?: Object) => React.Node` A static method that can be used to format values without them being rendered as React elements.
 
 ---
 
@@ -179,22 +186,6 @@ type MakeFormatter = (format: Format) => Formatter
 ```
 
 A factory for creating formatters which do not rely on external context.
-
----
-
-### makeUseFormatter
-
-```js
-type SuggestionTools = {
-  isSuggested: (suggestion: string) => boolean,
-  suggestions: string[],
-}
-
-type Format = (value: any, suggestionTools: SuggestionTools) => React.Node
-type MakeUseFormatter = ((...hookArgs: any[]) => Format) => (...hookArgs: any[]) => Formatter
-```
-
-A factory for creating formatters which can rely on external context.
 
 ---
 

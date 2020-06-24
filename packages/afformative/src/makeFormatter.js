@@ -1,23 +1,80 @@
 import invariant from "invariant"
+import PropTypes from "prop-types"
+import { useCallback } from "react"
 
-import makeUseFormatter from "./makeUseFormatter"
+import { SUGGESTIONS, FORMATTER_OVERRIDE } from "./constants"
 
-const makeFormatter = (format, formatterOptions) => {
+const defaultStaticSuggestions = [SUGGESTIONS.primitive]
+
+// NOTE: We're not using Ramda for bundle-size purposes, so no currying or `R_.flipIncludes`.
+const safeFlipIncludes = array => item => {
+  if (!Array.isArray(array)) {
+    return false
+  }
+
+  return array.includes(item)
+}
+
+/**
+ * @callback Format
+ * @param {*} value value to format
+ * @param {Object} suggestionTools props based on formatter usage context
+ * @param {Array} suggestionTools.suggestions suggestions passed to the formatter
+ * @param {Function} suggestionTools.isSuggested predicate returning if a suggestion was passed
+ * @returns {*} formatted value
+ */
+
+/**
+ * Creates a new formatter, a React component with a `.format` static property.
+ *
+ * @param {Format} format function used to format the value
+ * @param {Object} formatterOptions additional options for the formatter
+ * @param {string} formatterOptions.displayName React display name of the formatter
+ * @returns {React.Component}
+ */
+const makeFormatter = (format, formatterOptions = {}) => {
   invariant(
     typeof format === "function",
-    "The first argument passed to `makeFormatter` must be a function.",
+    "The first argument passed to `makeFormatter` must return a function.",
   )
 
-  const useFormatter = makeUseFormatter(() => format, {
-    ...formatterOptions,
-    callee: "makeFormatter",
-  })
+  const formatWithOverriding = (...args) => {
+    const value = args[0]
 
-  // HACK: We're kind of cheating here, but it's all for a good cause. By supplying the `callee`
-  // prop to `makeUseFormatter`, we expect that calling `useFormatter` won't result in any React
-  // hooks being registered.
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  return useFormatter()
+    if (value && typeof value[FORMATTER_OVERRIDE] === "function") {
+      return value[FORMATTER_OVERRIDE](...args)
+    }
+
+    return format(...args)
+  }
+
+  const Formatter = ({ children: value, suggestions, ...otherProps }) => {
+    const isSuggested = useCallback(safeFlipIncludes(suggestions), [suggestions])
+
+    return formatWithOverriding(value, {
+      isSuggested,
+      suggestions,
+      ...otherProps,
+    })
+  }
+
+  Formatter.format = (value, suggestions = defaultStaticSuggestions, otherProps) =>
+    formatWithOverriding(value, {
+      isSuggested: safeFlipIncludes(suggestions),
+      suggestions,
+      ...otherProps,
+    })
+
+  Formatter.propTypes = {
+    // NOTE: We want the formatter to format any arbitrary value.
+    // eslint-disable-next-line react/forbid-prop-types
+    children: PropTypes.any,
+    suggestions: PropTypes.arrayOf(PropTypes.string),
+  }
+
+  Formatter.displayName = formatterOptions.displayName || "Formatter"
+
+  return Formatter
 }
 
 export default makeFormatter
