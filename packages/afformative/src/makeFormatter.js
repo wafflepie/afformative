@@ -2,9 +2,11 @@ import invariant from "invariant"
 import PropTypes from "prop-types"
 import { useCallback } from "react"
 
-import { SUGGESTIONS, FORMATTER_OVERRIDE } from "./constants"
+import { SUGGESTIONS } from "./constants"
 
 const defaultStaticSuggestions = [SUGGESTIONS.primitive]
+
+const defaultNextFormat = (format, ...formatArgs) => format(...formatArgs)
 
 // NOTE: We're not using Ramda for bundle-size purposes, so no currying or `R_.flipIncludes`.
 const safeFlipIncludes = array => item => {
@@ -38,21 +40,11 @@ const makeFormatter = (format, formatterOptions = {}) => {
     "The first argument passed to `makeFormatter` must return a function.",
   )
 
-  const formatWithOverriding = (...args) => {
-    const value = args[0]
-
-    if (value && typeof value[FORMATTER_OVERRIDE] === "function") {
-      return value[FORMATTER_OVERRIDE](...args)
-    }
-
-    return format(...args)
-  }
-
   const Formatter = ({ children: value, suggestions, ...otherProps }) => {
     const isSuggested = useCallback(safeFlipIncludes(suggestions), [suggestions])
 
     return (
-      formatWithOverriding(value, {
+      format(value, {
         isSuggested,
         suggestions,
         ...otherProps,
@@ -61,11 +53,17 @@ const makeFormatter = (format, formatterOptions = {}) => {
   }
 
   Formatter.format = (value, suggestions = defaultStaticSuggestions, otherProps) =>
-    formatWithOverriding(value, {
+    format(value, {
       isSuggested: safeFlipIncludes(suggestions),
       suggestions,
       ...otherProps,
     }) ?? null
+
+  Formatter.override = (nextFormat = defaultNextFormat, nextFormatterOptions = {}) =>
+    makeFormatter((...formatArgs) => nextFormat(format, ...formatArgs), {
+      ...formatterOptions,
+      ...nextFormatterOptions,
+    })
 
   Formatter.propTypes = {
     // NOTE: We want the formatter to format any arbitrary value.

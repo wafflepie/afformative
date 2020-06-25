@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## O.4.0 [2020-06-25]
+
+### Added
+
+- All formatters now have the static `.override` method to allow easier overriding of formatter behaviour inside components that use them.
+
+### Removed
+
+- `FORMATTER_OVERRIDE` has been removed in favour of the static `.override` method.
+
 ## 0.3.1 [2020-06-25]
 
 ### Added

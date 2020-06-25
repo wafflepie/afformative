@@ -1,22 +1,20 @@
 import { mount } from "enzyme"
 import React, { useMemo } from "react"
 
-import { SUGGESTIONS, FORMATTER_OVERRIDE } from "./constants"
+import { SUGGESTIONS } from "./constants"
 import makeFormatter from "./makeFormatter"
 
 const toUpperCase = string => string.toUpperCase()
 
 describe("makeFormatter", () => {
   it("handles trivial formatting", () => {
-    const Formatter = makeFormatter(toUpperCase)
-    const wrapper = mount(<Formatter>foo</Formatter>)
-    expect(wrapper.text()).toBe("FOO")
+    const F = makeFormatter(toUpperCase)
+    expect(mount(<F>foo</F>).text()).toBe("FOO")
   })
 
   it("accepts a `displayName` option", () => {
-    const Formatter = makeFormatter(toUpperCase, { displayName: "UpperFormatter" })
-    const wrapper = mount(<Formatter>foo</Formatter>)
-    expect(wrapper.name()).toBe("UpperFormatter")
+    const F = makeFormatter(toUpperCase, { displayName: "UpperFormatter" })
+    expect(mount(<F>foo</F>).name()).toBe("UpperFormatter")
   })
 
   it("throws if first argument is not a function", () => {
@@ -24,12 +22,12 @@ describe("makeFormatter", () => {
   })
 
   it("returns a formatter with a static `format` property", () => {
-    const Formatter = makeFormatter(toUpperCase)
-    expect(Formatter.format("foo")).toBe("FOO")
+    const F = makeFormatter(toUpperCase)
+    expect(F.format("foo")).toBe("FOO")
   })
 
   it("passes `isSuggested` to `format` when used as a component", () => {
-    const Formatter = makeFormatter((value, { isSuggested }) => {
+    const F = makeFormatter((value, { isSuggested }) => {
       if (isSuggested(SUGGESTIONS.abbreviated)) {
         return value[0]
       }
@@ -37,21 +35,13 @@ describe("makeFormatter", () => {
       return value
     })
 
-    const wrapperAbbreviatedSuggestion = mount(
-      <Formatter suggestions={[SUGGESTIONS.abbreviated]}>foo</Formatter>,
-    )
-
-    expect(wrapperAbbreviatedSuggestion.text()).toBe("f")
-
-    const wrapperEmptySuggestions = mount(<Formatter suggestions={[]}>foo</Formatter>)
-    expect(wrapperEmptySuggestions.text()).toBe("foo")
-
-    const wrapperMissingSuggestions = mount(<Formatter>foo</Formatter>)
-    expect(wrapperMissingSuggestions.text()).toBe("foo")
+    expect(mount(<F suggestions={[SUGGESTIONS.abbreviated]}>foo</F>).text()).toBe("f")
+    expect(mount(<F suggestions={[]}>foo</F>).text()).toBe("foo")
+    expect(mount(<F>foo</F>).text()).toBe("foo")
   })
 
   it("passes `isSuggested` to `format` when used via the static `format` property", () => {
-    const Formatter = makeFormatter((value, { isSuggested }) => {
+    const F = makeFormatter((value, { isSuggested }) => {
       if (isSuggested(SUGGESTIONS.abbreviated)) {
         return value[0]
       }
@@ -59,25 +49,24 @@ describe("makeFormatter", () => {
       return value
     })
 
-    expect(Formatter.format("foo", [SUGGESTIONS.abbreviated])).toBe("f")
-    expect(Formatter.format("foo", [])).toBe("foo")
-    expect(Formatter.format("foo")).toBe("foo")
+    expect(F.format("foo", [SUGGESTIONS.abbreviated])).toBe("f")
+    expect(F.format("foo", [])).toBe("foo")
+    expect(F.format("foo")).toBe("foo")
   })
 
   it("handles hooks inside `format` when used as a component", () => {
-    const Formatter = makeFormatter(() => useMemo(() => "override", []))
-    const wrapper = mount(<Formatter>foo</Formatter>)
-    expect(wrapper.text()).toBe("override")
+    const F = makeFormatter(() => useMemo(() => "override", []))
+    expect(mount(<F>foo</F>).text()).toBe("override")
   })
 
   it("throws with hooks inside `format` when called statically", () => {
     // NOTE: This is more of a check that Enzyme works as advertised.
-    const Formatter = makeFormatter(() => useMemo(() => "override", []))
-    expect(() => Formatter.format("foo")).toThrow()
+    const F = makeFormatter(() => useMemo(() => "override", []))
+    expect(() => F.format("foo")).toThrow()
   })
 
   it("passes the `primitive` suggestion when called statically without suggestions", () => {
-    const Formatter = makeFormatter((value, { isSuggested }) => {
+    const F = makeFormatter((value, { isSuggested }) => {
       if (isSuggested(SUGGESTIONS.primitive)) {
         return "primitive"
       }
@@ -85,40 +74,66 @@ describe("makeFormatter", () => {
       return value
     })
 
-    expect(Formatter.format("foo")).toBe("primitive")
-    expect(Formatter.format("foo", [])).toBe("foo")
-    expect(Formatter.format("foo", [SUGGESTIONS.primitive])).toBe("primitive")
-
-    const wrapper = mount(<Formatter>foo</Formatter>)
-    expect(wrapper.text()).toBe("foo")
-
-    const wrapperPrimitiveSuggestion = mount(
-      <Formatter suggestions={[SUGGESTIONS.primitive]}>foo</Formatter>,
-    )
-
-    expect(wrapperPrimitiveSuggestion.text()).toBe("primitive")
-  })
-
-  it("detects the `FORMATTER_OVERRIDE` prop on values when used as a component", () => {
-    const Formatter = makeFormatter(toUpperCase)
-    const wrapper = mount(<Formatter>{{ [FORMATTER_OVERRIDE]: () => "bar" }}</Formatter>)
-    expect(wrapper.text()).toBe("bar")
-  })
-
-  it("detects the `FORMATTER_OVERRIDE` prop on values when called statically", () => {
-    const Formatter = makeFormatter(toUpperCase)
-    expect(Formatter.format({ [FORMATTER_OVERRIDE]: () => "bar" })).toBe("bar")
+    expect(F.format("foo")).toBe("primitive")
+    expect(F.format("foo", [])).toBe("foo")
+    expect(F.format("foo", [SUGGESTIONS.primitive])).toBe("primitive")
   })
 
   it("does not crash when formatter returns undefined as a component", () => {
-    const Formatter = makeFormatter(() => undefined)
-    const wrapper = mount(<Formatter>foo</Formatter>)
-    expect(wrapper.text()).toBe("")
+    const F = makeFormatter(() => undefined)
+    expect(mount(<F>foo</F>).text()).toBe("")
   })
 
   it("does not crash when formatter returns undefined statically", () => {
-    const Formatter = makeFormatter(() => undefined)
-    const wrapper = mount(<div>{Formatter.format("foo")}</div>)
-    expect(wrapper.text()).toBe("")
+    const F = makeFormatter(() => undefined)
+    expect(mount(<div>{F.format("foo")}</div>).text()).toBe("")
+  })
+
+  it("allows simple behavior overriding", () => {
+    const F = makeFormatter(toUpperCase)
+    const NF = F.override((format, value) => (value === "foo" ? "override" : format(value)))
+
+    expect(NF.format("foo")).toBe("override")
+    expect(mount(<NF>foo</NF>).text()).toBe("override")
+
+    expect(NF.format("bar")).toBe("BAR")
+    expect(mount(<NF>bar</NF>).text()).toBe("BAR")
+  })
+
+  it("allows simple behavior overriding with suggestions", () => {
+    const F = makeFormatter(toUpperCase)
+    const NF = F.override((format, value, { isSuggested }) =>
+      value === "foo" && isSuggested(SUGGESTIONS.abbreviated) ? "f" : format(value),
+    )
+
+    expect(NF.format("foo")).toBe("FOO")
+    expect(mount(<NF>foo</NF>).text()).toBe("FOO")
+
+    expect(NF.format("foo", [SUGGESTIONS.abbreviated])).toBe("f")
+    expect(mount(<NF suggestions={[SUGGESTIONS.abbreviated]}>foo</NF>).text()).toBe("f")
+
+    expect(NF.format("bar")).toBe("BAR")
+    expect(mount(<NF>bar</NF>).text()).toBe("BAR")
+  })
+
+  it("allows simple behavior overriding with other props", () => {
+    const F = makeFormatter(toUpperCase)
+    const NF = F.override((format, value, { forcedValue }) => forcedValue ?? format(value))
+
+    expect(NF.format("foo")).toBe("FOO")
+    expect(mount(<NF>foo</NF>).text()).toBe("FOO")
+
+    expect(NF.format("foo", undefined, { forcedValue: "override" })).toBe("override")
+    expect(mount(<NF forcedValue="override">foo</NF>).text()).toBe("override")
+  })
+
+  it("allows overriding of display names without specifying `nextFormat`", () => {
+    const F = makeFormatter(toUpperCase)
+    const NF = F.override(undefined, {
+      displayName: `Next${F.displayName}`,
+    })
+
+    expect(mount(<NF>foo</NF>).text()).toBe("FOO")
+    expect(mount(<NF>foo</NF>).name()).toBe("NextFormatter")
   })
 })

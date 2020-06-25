@@ -170,6 +170,7 @@ Any additional props will be passed to the `format` argument `makeFormatter` ins
 #### Statics
 
 - `format: (value: any, suggestions?: string[], otherProps?: Object) => React.Node` A static method that can be used to format values without them being rendered as React elements.
+- `override: (nextFormat: NextFormat, nextFormatterOptions: FormatterOptions) => Formatter` A static method that can be used to override the configuration of any formatter. The first parameter has the same signature as when using `makeFormatter`, except it receives the original `format` function as the first parameter to make defaulting easier.
 
 ---
 
@@ -212,10 +213,6 @@ A wrapper object for string constants you can use as formatter suggestions.
   - Example usage: N/A.
 
 Please [submit an issue](https://github.com/wafflepie/afformative/issues/new) or open a pull request if you want to add a suggestion.
-
-### FORMATTER_OVERRIDE
-
-A string constant meant to be used as an object key. Assign a function to a value under this key to override the behaviour of all formatters.
 
 ## Changelog
 
