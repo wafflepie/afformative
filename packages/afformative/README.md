@@ -175,6 +175,8 @@ Any additional props will be passed to the `format` argument `makeFormatter` ins
 
 ### makeFormatter
 
+A factory for creating new formatters.
+
 ```js
 type SuggestionTools = {
   isSuggested: (suggestion: string) => boolean,
@@ -182,10 +184,13 @@ type SuggestionTools = {
 }
 
 type Format = (value: any, suggestionTools: SuggestionTools) => React.Node
-type MakeFormatter = (format: Format) => Formatter
-```
 
-A factory for creating formatters which do not rely on external context.
+type FormatterOptions = {
+  displayName?: string,
+}
+
+type MakeFormatter = (format: Format, formatterOptions?: FormatterOptions) => Formatter
+```
 
 ---
 
@@ -207,6 +212,10 @@ A wrapper object for string constants you can use as formatter suggestions.
   - Example usage: N/A.
 
 Please [submit an issue](https://github.com/wafflepie/afformative/issues/new) or open a pull request if you want to add a suggestion.
+
+### FORMATTER_OVERRIDE
+
+A string constant meant to be used as an object key. Assign a function to a value under this key to override the behaviour of all formatters.
 
 ## Changelog
 
