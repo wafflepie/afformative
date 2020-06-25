@@ -109,4 +109,16 @@ describe("makeFormatter", () => {
     const Formatter = makeFormatter(toUpperCase)
     expect(Formatter.format({ [FORMATTER_OVERRIDE]: () => "bar" })).toBe("bar")
   })
+
+  it("does not crash when formatter returns undefined as a component", () => {
+    const Formatter = makeFormatter(() => undefined)
+    const wrapper = mount(<Formatter>foo</Formatter>)
+    expect(wrapper.text()).toBe("")
+  })
+
+  it("does not crash when formatter returns undefined statically", () => {
+    const Formatter = makeFormatter(() => undefined)
+    const wrapper = mount(<div>{Formatter.format("foo")}</div>)
+    expect(wrapper.text()).toBe("")
+  })
 })

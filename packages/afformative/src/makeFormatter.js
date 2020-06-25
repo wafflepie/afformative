@@ -51,11 +51,13 @@ const makeFormatter = (format, formatterOptions = {}) => {
   const Formatter = ({ children: value, suggestions, ...otherProps }) => {
     const isSuggested = useCallback(safeFlipIncludes(suggestions), [suggestions])
 
-    return formatWithOverriding(value, {
-      isSuggested,
-      suggestions,
-      ...otherProps,
-    })
+    return (
+      formatWithOverriding(value, {
+        isSuggested,
+        suggestions,
+        ...otherProps,
+      }) ?? null
+    )
   }
 
   Formatter.format = (value, suggestions = defaultStaticSuggestions, otherProps) =>
@@ -63,7 +65,7 @@ const makeFormatter = (format, formatterOptions = {}) => {
       isSuggested: safeFlipIncludes(suggestions),
       suggestions,
       ...otherProps,
-    })
+    }) ?? null
 
   Formatter.propTypes = {
     // NOTE: We want the formatter to format any arbitrary value.
