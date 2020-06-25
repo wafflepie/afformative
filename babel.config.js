@@ -10,5 +10,6 @@ module.exports = {
     "@babel/plugin-transform-react-jsx",
     cjs && ["@babel/plugin-transform-modules-commonjs", { loose }],
     ["@babel/plugin-transform-runtime", { useESModules: !cjs }],
+    "@babel/plugin-proposal-nullish-coalescing-operator",
   ].filter(Boolean),
 }
