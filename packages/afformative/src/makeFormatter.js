@@ -6,7 +6,7 @@ import { SUGGESTIONS } from "./constants"
 
 const defaultStaticSuggestions = [SUGGESTIONS.primitive]
 
-const defaultNextFormat = (format, ...formatArgs) => format(...formatArgs)
+const defaultOuterFormat = (format, ...formatArgs) => format(...formatArgs)
 
 // NOTE: We're not using Ramda for bundle-size purposes, so no currying or `R_.flipIncludes`.
 const safeFlipIncludes = array => item => {
@@ -59,11 +59,22 @@ const makeFormatter = (format, formatterOptions = {}) => {
       ...otherProps,
     }) ?? null
 
-  Formatter.override = (nextFormat = defaultNextFormat, nextFormatterOptions = {}) =>
-    makeFormatter((...formatArgs) => nextFormat(format, ...formatArgs), {
-      ...formatterOptions,
-      ...nextFormatterOptions,
-    })
+  Formatter.wrap = (outerFormat = defaultOuterFormat, nextFormatterOptions = {}) =>
+    // NOTE: Passing `format` instead of `Formatter.format` to `outerFormat` in order to make it
+    // as easy as possible to delegate formatting.
+    makeFormatter(
+      (value, suggestionTools) =>
+        outerFormat(
+          (delegatedValue, delegatedSuggestionTools) =>
+            format(delegatedValue, delegatedSuggestionTools ?? suggestionTools),
+          value,
+          suggestionTools,
+        ),
+      {
+        ...formatterOptions,
+        ...nextFormatterOptions,
+      },
+    )
 
   Formatter.propTypes = {
     // NOTE: We want the formatter to format any arbitrary value.

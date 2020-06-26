@@ -89,9 +89,9 @@ describe("makeFormatter", () => {
     expect(mount(<div>{F.format("foo")}</div>).text()).toBe("")
   })
 
-  it("allows simple behavior overriding", () => {
+  it("allows simple behavior wrapping", () => {
     const F = makeFormatter(toUpperCase)
-    const NF = F.override((format, value) => (value === "foo" ? "override" : format(value)))
+    const NF = F.wrap((format, value) => (value === "foo" ? "override" : format(value)))
 
     expect(NF.format("foo")).toBe("override")
     expect(mount(<NF>foo</NF>).text()).toBe("override")
@@ -100,9 +100,9 @@ describe("makeFormatter", () => {
     expect(mount(<NF>bar</NF>).text()).toBe("BAR")
   })
 
-  it("allows simple behavior overriding with suggestions", () => {
+  it("allows simple behavior wrapping with suggestions", () => {
     const F = makeFormatter(toUpperCase)
-    const NF = F.override((format, value, { isSuggested }) =>
+    const NF = F.wrap((format, value, { isSuggested }) =>
       value === "foo" && isSuggested(SUGGESTIONS.abbreviated) ? "f" : format(value),
     )
 
@@ -116,9 +116,9 @@ describe("makeFormatter", () => {
     expect(mount(<NF>bar</NF>).text()).toBe("BAR")
   })
 
-  it("allows simple behavior overriding with other props", () => {
+  it("allows simple behavior wrapping with other props", () => {
     const F = makeFormatter(toUpperCase)
-    const NF = F.override((format, value, { forcedValue }) => forcedValue ?? format(value))
+    const NF = F.wrap((format, value, { forcedValue }) => forcedValue ?? format(value))
 
     expect(NF.format("foo")).toBe("FOO")
     expect(mount(<NF>foo</NF>).text()).toBe("FOO")
@@ -127,13 +127,28 @@ describe("makeFormatter", () => {
     expect(mount(<NF forcedValue="override">foo</NF>).text()).toBe("override")
   })
 
-  it("allows overriding of display names without specifying `nextFormat`", () => {
+  it("allows overriding of display names without specifying `outerFormat`", () => {
     const F = makeFormatter(toUpperCase)
-    const NF = F.override(undefined, {
+    const NF = F.wrap(undefined, {
       displayName: `Next${F.displayName}`,
     })
 
     expect(mount(<NF>foo</NF>).text()).toBe("FOO")
     expect(mount(<NF>foo</NF>).name()).toBe("NextFormatter")
+  })
+
+  it("passes the original `suggestionTools` when they are not passed manually to `format` when wrapping", () => {
+    const F = makeFormatter((value, { isSuggested }) => {
+      if (isSuggested(SUGGESTIONS.abbreviated)) {
+        return value[0]
+      }
+
+      return value
+    })
+
+    const NF = F.wrap((format, value) => format(value))
+
+    expect(NF.format("foo", [SUGGESTIONS.abbreviated])).toBe("f")
+    expect(mount(<NF suggestions={[SUGGESTIONS.abbreviated]}>foo</NF>).text()).toBe("f")
   })
 })

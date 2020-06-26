@@ -170,7 +170,7 @@ Any additional props will be passed to the `format` argument `makeFormatter` ins
 #### Statics
 
 - `format: (value: any, suggestions?: string[], otherProps?: Object) => React.Node` A static method that can be used to format values without them being rendered as React elements.
-- `override: (nextFormat: NextFormat, nextFormatterOptions: FormatterOptions) => Formatter` A static method that can be used to override the configuration of any formatter. The first parameter has the same signature as when using `makeFormatter`, except it receives the original `format` function as the first parameter to make defaulting easier.
+- `wrap: (outerFormat: OuterFormat, nextFormatterOptions: FormatterOptions) => Formatter` A static method that can be used to override the configuration of any formatter, returning a new formatter. The first parameter has the same signature as when using `makeFormatter`, except it receives the original `format` function as the first parameter to make defaulting easier.
 
 ---
 
