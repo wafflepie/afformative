@@ -151,4 +151,10 @@ describe("makeFormatter", () => {
     expect(NF.format("foo", [SUGGESTIONS.abbreviated])).toBe("f")
     expect(mount(<NF suggestions={[SUGGESTIONS.abbreviated]}>foo</NF>).text()).toBe("f")
   })
+
+  it("sets the `innerFormatter` static property when wrapping", () => {
+    const F = makeFormatter(toUpperCase)
+    const NF = F.wrap()
+    expect(NF.innerFormatter).toBe(F)
+  })
 })

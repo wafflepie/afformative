@@ -59,13 +59,13 @@ const makeFormatter = (format, formatterOptions = {}) => {
       ...otherProps,
     }) ?? null
 
-  Formatter.wrap = (outerFormat = defaultOuterFormat, nextFormatterOptions = {}) =>
-    // NOTE: Passing `format` instead of `Formatter.format` to `outerFormat` in order to make it
-    // as easy as possible to delegate formatting.
-    makeFormatter(
+  Formatter.wrap = (outerFormat = defaultOuterFormat, nextFormatterOptions = {}) => {
+    const WrappedFormatter = makeFormatter(
       (value, suggestionTools) =>
         outerFormat(
           (delegatedValue, delegatedSuggestionTools) =>
+            // NOTE: Passing `format` instead of `Formatter.format` to `outerFormat` in order to make it
+            // as easy as possible to delegate formatting.
             format(delegatedValue, delegatedSuggestionTools ?? suggestionTools),
           value,
           suggestionTools,
@@ -75,6 +75,12 @@ const makeFormatter = (format, formatterOptions = {}) => {
         ...nextFormatterOptions,
       },
     )
+
+    // NOTE: This is mainly useful for debugging.
+    WrappedFormatter.innerFormatter = Formatter
+
+    return WrappedFormatter
+  }
 
   Formatter.propTypes = {
     // NOTE: We want the formatter to format any arbitrary value.
