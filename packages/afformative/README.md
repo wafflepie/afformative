@@ -47,10 +47,10 @@ A formatter is a React component which accepts a value as its `children` prop. F
 ```js
 import { makeFormatter } from "afformative"
 
-const TrimFormatter = makeFormatter(value => value.trim())
+const UpperCaseFormatter = makeFormatter(value => value.toUpperCase())
 
-renderToString(<TrimFormatter>{"     foo     "}</TrimFormatter>)
-// "foo"
+renderToString(<UpperCaseFormatter>foo</UpperCaseFormatter>)
+// "FOO"
 ```
 
 Consume formatters in your UI component library using a conventional `formatter` prop.
@@ -58,6 +58,7 @@ Consume formatters in your UI component library using a conventional `formatter`
 ```js
 import { makeFormatter } from "afformative"
 
+// This is usually the best default formatter.
 const IdentityFormatter = makeFormatter(value => value)
 
 const Select = ({ formatter: Formatter = IdentityFormatter, items, ...otherProps }) => (
@@ -88,10 +89,10 @@ All formatters have a `.format` static method, behaving similarly to using them 
 ```js
 import { makeFormatter } from "afformative"
 
-const TrimFormatter = makeFormatter(value => value.trim())
+const UpperCaseFormatter = makeFormatter(value => value.toUpperCase())
 
-TrimFormatter.format("     foo     ")
-// "foo"
+UpperCaseFormatter.format("foo")
+// "FOO"
 ```
 
 ### Suggestion Mechanism
@@ -104,9 +105,7 @@ Suggestions can be used to tell formatters that a value needs to be rendered wit
 import { makeFormatter, SUGGESTIONS } from "afformative"
 
 const BooleanFormatter = makeFormatter((value, { isSuggested }) => {
-  const primitive = isSuggested(SUGGESTIONS.primitive)
-
-  if (primitive) {
+  if (isSuggested(SUGGESTIONS.primitive)) {
     return value ? "True" : "False"
   }
 
@@ -120,9 +119,6 @@ renderToString(<BooleanFormatter suggestions={[SUGGESTIONS.primitive]}>{true}</B
 // "True"
 
 BooleanFormatter.format(true)
-// "True", `SUGGESTIONS.primitive` is passed automatically when using `.format`
-
-BooleanFormatter.format(true, [SUGGESTIONS.primitive])
 // "True", `SUGGESTIONS.primitive` is passed automatically when using `.format`
 ```
 
@@ -138,11 +134,16 @@ const useEnumFormatter = enumType => {
   const enumTranslationKeys = useSelector(getEnumTranslationKeys(enumType))
   const intl = useIntl()
 
-  return value =>
-    intl.formatMessage({
-      defaultMessage: value,
-      id: enumTranslationKeys[value],
-    })
+  return useMemo(
+    () =>
+      makeFormatter(value =>
+        intl.formatMessage({
+          defaultMessage: value,
+          id: enumTranslationKeys[value],
+        }),
+      ),
+    [intl, enumTranslationKeys],
+  )
 }
 
 const SomeEnumFormatter = useEnumFormatter(EnumTypes.SOME_ENUM)
@@ -151,6 +152,30 @@ const SomeEnumFormatter = useEnumFormatter(EnumTypes.SOME_ENUM)
 `SomeEnumFormatter` is now usable even for static formatting, it has access to React context via a closure.
 
 Awesome, right?
+
+### Consuming Formatters
+
+As mentioned earlier, formatters should be passed to components using the conventional `formatter` prop. Alternatively, if you need to pass multiple formatters (e.g. in case of column definitions), pass an array of objects where each object has a `formatter` property.
+
+All formatters also expose the `.wrap` static method. You can use this method to alter the behaviour of the formatter for some specific values.
+
+```js
+const useSnowflakeAwareFormatter = formatter => {
+  const intl = useIntl()
+
+  return useMemo(
+    () =>
+      formatter.wrap((format, value) => {
+        if (isSnowflake(value)) {
+          return intl.formatMessage(messages.snowflake)
+        }
+
+        return format(value)
+      }),
+    [formatter, intl],
+  )
+}
+```
 
 ## API Reference
 
@@ -163,14 +188,14 @@ Formatters are React components returned by `makeFormatter`.
 #### Props
 
 - `children: any` The value to format.
-- `suggestions: string[]` Suggestions the formatter should take note of.
+- `suggestions?: string[]` Suggestions the formatter should take note of.
 
 Any additional props will be passed to the `format` argument `makeFormatter` inside the second parameter (alongside suggestion tools).
 
 #### Statics
 
 - `format: (value: any, suggestions?: string[], otherProps?: Object) => React.Node` A static method that can be used to format values without them being rendered as React elements.
-- `wrap: (outerFormat: OuterFormat, nextFormatterOptions: FormatterOptions) => Formatter` A static method that can be used to override the configuration of any formatter, returning a new formatter. The first parameter has the same signature as when using `makeFormatter`, except it receives the original `format` function as the first parameter to make defaulting easier.
+- `wrap: (outerFormat?: OuterFormat, nextFormatterOptions?: FormatterOptions) => Formatter` A static method that can be used to alter the behaviour of any formatter, returning a new formatter. The first parameter has the same signature as when using `makeFormatter`, except it receives the original `format` function as the first parameter to make defaulting easier.
 
 ---
 

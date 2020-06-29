@@ -21,9 +21,8 @@ const safeFlipIncludes = array => item => {
  * @callback Format
  * @param {*} value value to format
  * @param {Object} suggestionTools props based on formatter usage context
- * @param {Array} suggestionTools.suggestions suggestions passed to the formatter
+ * @param {string[]} suggestionTools.suggestions suggestions passed to the formatter
  * @param {Function} suggestionTools.isSuggested predicate returning if a suggestion was passed
- * @returns {*} formatted value
  */
 
 /**
@@ -32,7 +31,6 @@ const safeFlipIncludes = array => item => {
  * @param {Format} format function used to format the value
  * @param {Object} formatterOptions additional options for the formatter
  * @param {string} formatterOptions.displayName React display name of the formatter
- * @returns {React.Component}
  */
 const makeFormatter = (format, formatterOptions = {}) => {
   invariant(
@@ -40,6 +38,13 @@ const makeFormatter = (format, formatterOptions = {}) => {
     "The first argument passed to `makeFormatter` must return a function.",
   )
 
+  /**
+   * An afformative formatter.
+   *
+   * @param {Object} props React component props
+   * @param {*} props.value value to format
+   * @param {string[]} props.suggestions contextual suggestions which the formatter should take note of
+   */
   const Formatter = ({ children: value, suggestions, ...otherProps }) => {
     const isSuggested = useCallback(safeFlipIncludes(suggestions), [suggestions])
 
@@ -52,6 +57,14 @@ const makeFormatter = (format, formatterOptions = {}) => {
     )
   }
 
+  /**
+   * Statically formats a value. Useful if you need to work with primitive values,
+   * not React elements.
+   *
+   * @param {*} value value to format
+   * @param {string[]} suggestions contextual suggestions which the formatter should take note of
+   * @param {Object} otherProps additional contextual props
+   */
   Formatter.format = (value, suggestions = defaultStaticSuggestions, otherProps) =>
     format(value, {
       isSuggested: safeFlipIncludes(suggestions),
@@ -59,6 +72,7 @@ const makeFormatter = (format, formatterOptions = {}) => {
       ...otherProps,
     }) ?? null
 
+  // TODO: Instead of documenting this method via a JSDoc, typings would be much more useful.
   Formatter.wrap = (outerFormat = defaultOuterFormat, nextFormatterOptions = {}) => {
     const WrappedFormatter = makeFormatter(
       (value, suggestionTools) =>
@@ -86,7 +100,7 @@ const makeFormatter = (format, formatterOptions = {}) => {
     // NOTE: We want the formatter to format any arbitrary value.
     // eslint-disable-next-line react/forbid-prop-types
     children: PropTypes.any,
-    suggestions: PropTypes.arrayOf(PropTypes.string),
+    suggestions: PropTypes.arrayOf(PropTypes.oneOf(Object.values(SUGGESTIONS))),
   }
 
   Formatter.displayName = formatterOptions.displayName || "Formatter"
