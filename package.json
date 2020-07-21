@@ -55,6 +55,7 @@
   "scripts": {
     "test": "jest",
     "build": "lerna exec -- rollup -c=../../rollup.config.js",
+    "lint": "eslint --ext .js --ignore-path .gitignore ./",
     "prepublish": "yarn build",
     "prepublishOnly": "yarn",
     "lernaPublish": "lerna publish"
