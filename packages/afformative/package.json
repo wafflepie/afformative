@@ -2,9 +2,10 @@
   "name": "afformative",
   "version": "0.5.2",
   "license": "MIT",
-  "main": "lib/afformative.js",
-  "module": "es/afformative.js",
-  "unpkg": "dist/afformative.js",
+  "main": "dist/afformative.cjs.js",
+  "module": "dist/afformative.esm.js",
+  "unpkg": "dist/afformative.umd.js",
+  "types": "dist/types/index.d.ts",
   "description": "A standardized way to format values in your React components.",
   "keywords": [
     "react",
@@ -26,17 +27,6 @@
   "contributors": [
     "Vaclav Jancarik <vaclav.janc@gmail.com>"
   ],
-  "dependencies": {
-    "invariant": "^2.2.4",
-    "prop-types": "^15.7.2"
-  },
-  "peerDependencies": {
-    "react": ">=16.8.3"
-  },
-  "devDependencies": {
-    "enzyme": "3.11.0",
-    "react": "16.13.1"
-  },
   "publishConfig": {
     "access": "public"
   },

@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## 0.6.0 [2020-12-19]
+
+### Added
+
+- TypeScript support.
+
+### Changed
+
+- Using formatters as React components is deprecated. Prefer using `.format` in all cases.
+- It is now necessary to pass the `primitive` suggestion manually when using the `.format` method.
+- The format definition passed to `makeFormatter` and `.wrap` is no longer called with a single `suggestionTools` argument, but rather with `usageSuggestions` and `dataContext`.
+
+### Removed
+
+- The `suggestions` export. Instead, pass the suggestion values directly as strings.
+- All non-development dependencies.
+
 ## 0.5.2 [2020-06-29]
 
 ### Changed

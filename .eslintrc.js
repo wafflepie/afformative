@@ -1,5 +1,5 @@
 module.exports = {
-  parser: "babel-eslint",
+  parser: "@typescript-eslint/parser",
   root: true,
   env: {
     browser: true,
@@ -8,7 +8,21 @@ module.exports = {
     jest: true,
     node: true,
   },
-  extends: ["airbnb", "airbnb/hooks", "prettier", "prettier/react"],
+  plugins: ["@typescript-eslint"],
+  extends: [
+    "airbnb-base",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/typescript",
+    "prettier",
+    "prettier/@typescript-eslint",
+  ],
+  settings: {
+    "import/resolver": {
+      node: {
+        extensions: [".js", ".ts"],
+      },
+    },
+  },
   rules: {
     "padding-line-between-statements": [
       "error",
@@ -45,8 +59,6 @@ module.exports = {
         },
       },
     ],
-    "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn",
     "no-console": [
       "error",
       {
@@ -56,15 +68,19 @@ module.exports = {
     "import/no-extraneous-dependencies": [
       "error",
       {
-        devDependencies: [
-          "packages/**/*.test.js",
-          "packages/**/*.config.js",
-          "*.config.js",
-          "testsSetup.js",
-        ],
+        devDependencies: ["packages/**/*.test.{js,ts}", "packages/**/*.config.js", "*.config.js"],
       },
     ],
     "import/prefer-default-export": "off",
-    "react/jsx-filename-extension": "off",
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        js: "never",
+        ts: "never",
+      },
+    ],
+    "no-use-before-define": "off",
+    "@typescript-eslint/no-explicit-any": "off",
   },
 }
