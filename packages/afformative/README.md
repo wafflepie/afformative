@@ -42,7 +42,7 @@ I'll try not to bore you too much, I promise.
 
 > Thou shalt not format thy values without afformative.
 
-A formatter is an object with a `.format` method. Formatters should be created solely using the `makeFormatter` utility function.
+A formatter is an object with a `.format` method. Formatters should be created solely using the `makeFormatter` function.
 
 ```js
 import { makeFormatter } from "afformative"
@@ -98,7 +98,7 @@ booleanFormatter.format(true) // <Icon type="success" />
 booleanFormatter.format(true, ["primitive"]) // "True"
 ```
 
-You can also pass arbitrary data to formatters as the third argument.
+You can also pass arbitrary data to formatters as the third argument: the data context. Let's use a dummy table component as an example.
 
 ```js
 const Table = ({ rows, formatter = identityFormatter }) => (
@@ -114,7 +114,7 @@ const Table = ({ rows, formatter = identityFormatter }) => (
 )
 ```
 
-This allows the users of this table component to write purpose-built formatters, making it possible to take other values in the same row into account.
+Data context allows the users of this table component to write purpose-built formatters, making it possible to take other values in the same row into account. For example, the following formatter would change the color of the cell value based on the previous value in the same row.
 
 ```js
 const rowTrendFormatter = makeFormatter((value, suggestions, { row, cellIndex }) => {
@@ -128,7 +128,9 @@ const rowTrendFormatter = makeFormatter((value, suggestions, { row, cellIndex })
 })
 ```
 
-Because `row` and `cellIndex` are passed in the data context, the formatter still receives just the cell value as its first parameter! This allows easy reuse of generic formatters in this table component.
+Of course, this formatter only makes sense for our table component, nowhere else.
+
+Because `row` and `cellIndex` are passed as the data context, the formatter still receives just the cell value as its first parameter! This allows us to pass other generic formatters (e.g. a currency formatter) to the table component without having to worry about the value structure.
 
 ### Accessing React Context Reliably
 
