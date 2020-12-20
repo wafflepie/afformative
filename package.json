@@ -40,6 +40,7 @@
     "prettier": "2.2.1",
     "ramda": "0.27.1",
     "ramda-extension": "0.10.3",
+    "rimraf": "3.0.2",
     "rollup": "2.34.0",
     "rollup-plugin-auto-external": "2.0.0",
     "rollup-plugin-babel": "4.4.0",
@@ -51,7 +52,8 @@
   },
   "scripts": {
     "test": "jest",
-    "build": "yarn build:rollup && yarn build:tsc",
+    "clean": "lerna exec -- rimraf dist",
+    "build": "yarn clean && yarn build:rollup && yarn build:tsc",
     "build:rollup": "lerna exec -- rollup -c=../../rollup.config.js",
     "build:tsc": "lerna exec -- tsc --project tsconfig.build.json --emitDeclarationOnly",
     "lint": "eslint --ext .js --ignore-path .gitignore ./",
