@@ -68,14 +68,19 @@ export interface Formatter<TInput, TOutput> {
    */
   wrap: <TNextInput = TInput, TNextOutput = TOutput>(
     /**
-     * Function used to format the value. Has the same signature as the one passed to `makeFormatter`,
-     * except a `format` function is passed in the first position to simplify delegation.
+     * Function used to format the value. Has the same signature as the one passed
+     * to `makeFormatter`, except a `delegate` function is passed in the first position.
+     * This function can be used to delegate formatting to the original (inner) formatter.
      */
     nextFormat: FormatChainDefinition<TInput, TOutput, TNextInput, TNextOutput>,
     /** New formatter options, replacing the original ones. */
     nextFormatterOptions?: FormatterOptions,
   ) => Formatter<TNextInput, TNextOutput>
-  /** Backwards-compatible way to use the formatter as a React component. */
+  /**
+   * Backwards-compatible way to use the formatter as a React component.
+   *
+   * @deprecated Since v0.6.0. Prefer using the `.format` method instead.
+   */
   (props: FormatterProps<TInput>): TOutput
 }
 

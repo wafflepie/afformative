@@ -42,7 +42,7 @@ I'll try not to bore you too much, I promise.
 
 > Thou shalt not format thy values without afformative.
 
-A formatter is an object with a `.format` method. Formatters should be created solely using the `makeFormatter` function.
+A formatter is an object with a `.format` method. Formatters should be created solely using the `makeFormatter` factory.
 
 ```js
 import { makeFormatter } from "afformative"
@@ -75,19 +75,19 @@ const Select = ({ formatter = identityFormatter, items, ...otherProps }) => (
 )
 ```
 
-> Formatters in older versions of afformative were intended to be used as React components. This usage is now deprecated in favour of always using the `.format` method. This is to make formatters more versatile, as the ability to use formatters as React components implies that hook usage within formatters is okay, when in reality it just makes using the formatters harder in some contexts.
-
 ### Usage Context
 
-Although formatters can render icons or custom translation components, we often need to access primitive data instead of React elements. Lexicographic sorting of items based on translations is a typical real world example, especially when you are using a custom React component for visualising the translation keys alongside the actual translations. This is where the suggestion mechanism comes into play.
+Although formatters can render icons or custom translation components, we often need to access primitive data instead of React elements.
 
-Suggestions can be used to tell formatters that a value needs to be rendered with some special care. For example, use `"abbreviated"` to tell a formatter that it is being used in a narrow table column.
+> Lexicographic sorting of items based on translations is a typical real world example, especially when you are using a custom React component for visualising the translation keys alongside the actual translations.
+
+This is where usage suggestions comes into play. Suggestions can be used to tell formatters that a value needs to be rendered with some special care. For example, pass `"primitive"` to tell a formatter that it should return a primitive value, such as a string.
 
 ```js
 import { makeFormatter } from "afformative"
 
-const booleanFormatter = makeFormatter((value, suggestions) => {
-  if (suggestions.includes("primitive")) {
+const booleanFormatter = makeFormatter((value, usageSuggestions) => {
+  if (usageSuggestions.includes("primitive")) {
     return value ? "True" : "False"
   }
 
@@ -98,7 +98,7 @@ booleanFormatter.format(true) // <Icon type="success" />
 booleanFormatter.format(true, ["primitive"]) // "True"
 ```
 
-You can also pass arbitrary data to formatters as the third argument: the data context. Let's use a dummy table component as an example.
+You can also pass arbitrary data to formatters as the third argument: data context. Let's use a dummy table component as an example.
 
 ```js
 const Table = ({ rows, formatter = identityFormatter }) => (
@@ -134,11 +134,10 @@ Because `row` and `cellIndex` are passed as the data context, the formatter stil
 
 ### Accessing React Context Reliably
 
-Using the `makeFormatter` factory statically is sufficient if your values do not depend on any external context. Things get a bit trickier once you need to statically format values which depend on React context.
+Use hooks.
 
 ```js
 const useEnumFormatter = enumType => {
-  // Resolve your data context here via React hooks.
   // `useSelector` is from `react-redux`, `useIntl` from `react-intl`.
   // `makeSelectEnumTranslationKeys` is a made-up Redux selector factory.
   const enumTranslationKeys = useSelector(makeSelectEnumTranslationKeys(enumType))
@@ -159,15 +158,11 @@ const useEnumFormatter = enumType => {
 const someEnumFormatter = useEnumFormatter("someEnum")
 ```
 
-`someEnumFormatter` is now usable even for static formatting, it has access to React context via a closure.
-
-Awesome, right?
-
 ### Consuming Formatters
 
 As mentioned earlier, formatters should be passed to components using the conventional `formatter` prop. Alternatively, if you need to pass multiple formatters (e.g. in case of column definitions), pass an array of objects where each object has a `formatter` property.
 
-All formatters also expose the `.wrap` static method. You can use this method to alter the behaviour of the formatter for some specific values.
+All formatters also expose the `.wrap` method. You can use this method to alter the behaviour of the formatter for some specific values.
 
 ```js
 const useSnowflakeAwareFormatter = formatter => {
