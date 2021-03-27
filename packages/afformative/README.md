@@ -42,7 +42,7 @@ I'll try not to bore you too much, I promise.
 
 > Thou shalt not format thy values without afformative.
 
-A formatter is an object with a `.format` method. Formatters should be created solely using the `makeFormatter` factory.
+A formatter is an object with a `format` method. Formatters should be created solely using the `makeFormatter` factory.
 
 ```js
 import { makeFormatter } from "afformative"
@@ -96,6 +96,13 @@ const booleanFormatter = makeFormatter((value, usageSuggestions) => {
 
 booleanFormatter.format(true) // <Icon type="success" />
 booleanFormatter.format(true, ["primitive"]) // "True"
+```
+
+All formatters also have the `formatAsPrimitive` method, which automatically passes the primitive suggestion in addition to all other suggestions.
+
+```js
+booleanFormatter.formatAsPrimitive(true) // "True"
+booleanFormatter.formatAsPrimitive(true, ["abbreviated"]) // "True"
 ```
 
 You can also pass arbitrary data to formatters as the third argument: data context. Let's use a dummy table component as an example.
@@ -162,7 +169,7 @@ const someEnumFormatter = useEnumFormatter("someEnum")
 
 As mentioned earlier, formatters should be passed to components using the conventional `formatter` prop. Alternatively, if you need to pass multiple formatters (e.g. in case of column definitions), pass an array of objects where each object has a `formatter` property.
 
-All formatters also expose the `.wrap` method. You can use this method to alter the behaviour of the formatter for some specific values.
+All formatters also expose the `wrap` method. You can use this method to alter the behaviour of the formatter for some specific values.
 
 ```js
 const useSnowflakeAwareFormatter = formatter => {

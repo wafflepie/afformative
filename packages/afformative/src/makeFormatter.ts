@@ -121,7 +121,7 @@ export interface Formatter<TInput, TOutput, TPrimitiveOutput = TOutput> {
   /**
    * Backwards-compatible way to use the formatter as a React component.
    *
-   * @deprecated Since v0.6.0. Prefer using the `.format` method instead.
+   * @deprecated Since v0.6.0. Prefer using the `Formatter.format` method instead.
    */
   (props: FormatterProps<TInput>): TOutput | TPrimitiveOutput | null
 }
