@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## 0.6.0-alpha.2 [2021-03-27]
+
+### Added
+
+- The `formatAsPrimitive` method, supplying the `"primitive"` suggestion automatically.
+
+### Changed
+
+- Type signatures have been modified to better handle structural changes when using the `"primitive"` suggestion.
+
 ## 0.6.0-alpha.1 [2020-12-20]
 
 ### Added
