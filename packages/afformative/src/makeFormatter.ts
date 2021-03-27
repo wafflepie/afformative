@@ -123,7 +123,7 @@ export interface Formatter<TInput, TOutput, TPrimitiveOutput = TOutput> {
    *
    * @deprecated Since v0.6.0. Prefer using the `.format` method instead.
    */
-  (props: FormatterProps<TInput>): TOutput | TPrimitiveOutput
+  (props: FormatterProps<TInput>): TOutput | TPrimitiveOutput | null
 }
 
 /**
@@ -140,7 +140,7 @@ export const makeFormatter = <TInput, TOutput, TPrimitiveOutput = TOutput>(
     children,
     suggestions = [],
     ...dataContext
-  }) => format(children, suggestions, dataContext)
+  }) => format(children, suggestions, dataContext) ?? null
 
   formatter.displayName = formatterOptions?.displayName
 

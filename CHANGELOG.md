@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## 0.6.0-alpha.# [2021-03-27]
+
+### Changed
+
+- Formatters again fall back to `null` if used as React components.
+
 ## 0.6.0-alpha.2 [2021-03-27]
 
 ### Added
