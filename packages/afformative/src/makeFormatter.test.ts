@@ -27,6 +27,22 @@ describe("makeFormatter", () => {
     expect(formatter.format("foo")).toBe("foo")
   })
 
+  it("handles formatting with the `primitive` suggestion", () => {
+    type Structure = { value: string }
+
+    const formatter = makeFormatter<Structure, Structure, string>((value, suggestions) => {
+      if (suggestions.includes("primitive")) {
+        return value.value
+      }
+
+      return value
+    })
+
+    expect(formatter.format({ value: "foo" }, ["primitive"])).toBe("foo")
+    expect(formatter.formatAsPrimitive({ value: "foo" })).toBe("foo")
+    expect(formatter.formatAsPrimitive({ value: "foo" }, ["primitive"])).toBe("foo")
+  })
+
   it("supports simple behavior wrapping", () => {
     const formatter = makeFormatter<string, string>(toUpperCase)
 
@@ -48,6 +64,20 @@ describe("makeFormatter", () => {
     expect(wrappedFormatter.format("foo")).toBe("FOO")
     expect(wrappedFormatter.format("foo", ["abbreviated"])).toBe("f")
     expect(wrappedFormatter.format("bar")).toBe("BAR")
+  })
+
+  it("supports simple behavior wrapping with the `primitive` suggestion", () => {
+    type Structure = { value: string }
+
+    const formatter = makeFormatter<string, string>(toUpperCase)
+
+    const wrappedFormatter = formatter.wrap<Structure, Structure, string>(
+      (delegate, value, suggestions) => (suggestions.includes("primitive") ? value.value : value),
+    )
+
+    expect(wrappedFormatter.format({ value: "foo" }, ["primitive"])).toBe("foo")
+    expect(wrappedFormatter.formatAsPrimitive({ value: "foo" })).toBe("foo")
+    expect(wrappedFormatter.formatAsPrimitive({ value: "foo" }, ["primitive"])).toBe("foo")
   })
 
   it("supports simple behavior wrapping with data context", () => {
