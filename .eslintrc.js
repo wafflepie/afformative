@@ -14,7 +14,6 @@ module.exports = {
     "plugin:@typescript-eslint/recommended",
     "plugin:import/typescript",
     "prettier",
-    "prettier/@typescript-eslint",
   ],
   settings: {
     "import/resolver": {
