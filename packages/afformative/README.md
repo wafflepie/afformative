@@ -98,7 +98,7 @@ booleanFormatter.format(true) // <Icon type="success" />
 booleanFormatter.format(true, ["primitive"]) // "True"
 ```
 
-All formatters also have the `formatAsPrimitive` method, which automatically passes the primitive suggestion in addition to all other suggestions.
+All formatters also have the `formatAsPrimitive` method, which automatically passes the `"primitive"` suggestion in addition to all other suggestions.
 
 ```js
 booleanFormatter.formatAsPrimitive(true) // "True"

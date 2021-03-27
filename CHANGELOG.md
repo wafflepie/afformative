@@ -15,7 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - Using formatters as React components is now deprecated. Prefer using the `Formatter.format` method in all cases.
-- It is now necessary to pass the `"primitive"` suggestion manually when using the `Formatter.format` method.
+- The `"primitive"` suggestion is no longer passed automatically when using the `Formatter.format` method.
 - The format definition passed to `makeFormatter` and `Formatter.wrap` is no longer called with a single `suggestionTools` argument, but rather with `usageSuggestions` and `dataContext`.
 
 ### Removed
