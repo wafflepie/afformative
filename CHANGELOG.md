@@ -42,7 +42,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `Formatter.override` static method of formatters has been renamed to `Formatter.wrap`.
 - `Formatter.wrap` now defaults delegation of `suggestionTools`.
 
-## O.4.0 [2020-06-25]
+## 0.4.0 [2020-06-25]
 
 ### Added
 
