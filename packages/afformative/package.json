@@ -27,6 +27,9 @@
   "contributors": [
     "Vaclav Jancarik <vaclav.janc@gmail.com>"
   ],
+  "dependencies": {
+    "@babel/runtime": "^7.12.1"
+  },
   "publishConfig": {
     "access": "public"
   },

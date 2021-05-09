@@ -1,15 +1,17 @@
 import path from "path"
 
+import babelPlugin from "@rollup/plugin-babel"
+import cjsPlugin from "@rollup/plugin-commonjs"
+import nodeResolvePlugin from "@rollup/plugin-node-resolve"
+import replacePlugin from "@rollup/plugin-replace"
 import { split, compose, join, prepend, tail, map } from "ramda"
 import { toPascalCase, toKebabCase } from "ramda-extension"
 import autoExternalPlugin from "rollup-plugin-auto-external"
-import babelPlugin from "rollup-plugin-babel"
-import cjsPlugin from "rollup-plugin-commonjs"
-import nodeResolvePlugin from "rollup-plugin-node-resolve"
-import replacePlugin from "rollup-plugin-replace"
 import { terser as terserPlugin } from "rollup-plugin-terser"
 
-const { LERNA_ROOT_PATH } = process.env
+const { LERNA_ROOT_PATH, LERNA_PACKAGE_NAME } = process.env
+const PACKAGE_ROOT_PATH = process.cwd()
+const INPUT_FILE = path.join(PACKAGE_ROOT_PATH, "src/index.ts")
 
 const extensions = [".js", ".ts"]
 
@@ -28,20 +30,20 @@ const plugins = {
   nodeResolve: nodeResolvePlugin({
     extensions,
   }),
-  babel: babelPlugin({
-    cwd: LERNA_ROOT_PATH,
-    extensions,
-    runtimeHelpers: true,
-  }),
+
+  // NOTE: We have no way of injecting the current output format into our Babel config file,
+  // therefore we need to use two files. Brittle, but it works.
+  babel: ({ useESModules }) =>
+    babelPlugin({
+      cwd: LERNA_ROOT_PATH,
+      extensions,
+      babelHelpers: "runtime",
+      configFile: path.join(__dirname, useESModules ? "babel.config.esm.js" : "babel.config.js"),
+    }),
 }
 
 const getGlobalName = compose(join(""), prepend("Afformative"), map(toPascalCase), tail, split("/"))
-
 const getFileName = compose(join("-"), prepend("afformative"), map(toKebabCase), tail, split("/"))
-
-const { LERNA_PACKAGE_NAME } = process.env
-const PACKAGE_ROOT_PATH = process.cwd()
-const INPUT_FILE = path.join(PACKAGE_ROOT_PATH, "src/index.ts")
 
 const globalName = getGlobalName(LERNA_PACKAGE_NAME)
 const fileName = getFileName(LERNA_PACKAGE_NAME)
@@ -55,7 +57,13 @@ export default [
       format: "cjs",
       indent: false,
     },
-    plugins: [autoExternalPlugin(), plugins.nodeResolve, plugins.babel, plugins.cjs],
+    external: [/@babel\/runtime/],
+    plugins: [
+      autoExternalPlugin(),
+      plugins.nodeResolve,
+      plugins.cjs,
+      plugins.babel({ useESModules: false }),
+    ],
   },
 
   // NOTE: ES
@@ -66,7 +74,13 @@ export default [
       format: "es",
       indent: false,
     },
-    plugins: [autoExternalPlugin(), plugins.nodeResolve, plugins.babel, plugins.cjs],
+    external: [/@babel\/runtime/],
+    plugins: [
+      autoExternalPlugin(),
+      plugins.nodeResolve,
+      plugins.cjs,
+      plugins.babel({ useESModules: true }),
+    ],
   },
 
   // NOTE: UMD Development
@@ -79,10 +93,13 @@ export default [
       indent: false,
     },
     plugins: [
-      replacePlugin({ "process.env.NODE_ENV": JSON.stringify("development") }),
+      replacePlugin({
+        "process.env.NODE_ENV": JSON.stringify("development"),
+        preventAssignment: true,
+      }),
       plugins.nodeResolve,
-      plugins.babel,
       plugins.cjs,
+      plugins.babel({ useESModules: false }),
     ],
   },
 
@@ -96,10 +113,13 @@ export default [
       indent: false,
     },
     plugins: [
-      replacePlugin({ "process.env.NODE_ENV": JSON.stringify("production") }),
+      replacePlugin({
+        "process.env.NODE_ENV": JSON.stringify("production"),
+        preventAssignment: true,
+      }),
       plugins.nodeResolve,
-      plugins.babel,
       plugins.cjs,
+      plugins.babel({ useESModules: false }),
       plugins.terser,
     ],
   },
