@@ -1,6 +1,6 @@
 {
   "name": "afformative",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "license": "MIT",
   "main": "dist/afformative.cjs.js",
   "module": "dist/afformative.esm.js",
