@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## 0.6.2 [2021-05-14]
+
+### Added
+
+- It's now possible to use TypeScript to define data context constraints of formatters.
+
 ## 0.6.1 [2021-05-09]
 
 ### Changed
