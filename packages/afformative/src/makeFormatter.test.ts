@@ -83,8 +83,13 @@ describe("makeFormatter", () => {
   it("supports simple behavior wrapping with data context", () => {
     const formatter = makeFormatter<string, string>(toUpperCase)
 
+    interface WrappedDataContext {
+      forcedValue?: string
+    }
+
     const wrappedFormatter = formatter.wrap(
-      (delegate, value, suggestions, { forcedValue }) => forcedValue ?? delegate(value),
+      (delegate, value, suggestions, { forcedValue }: WrappedDataContext) =>
+        forcedValue ?? delegate(value),
     )
 
     expect(wrappedFormatter.format("foo")).toBe("FOO")
@@ -108,5 +113,47 @@ describe("makeFormatter", () => {
     const formatter = makeFormatter<string, string>(toUpperCase)
     const wrappedFormatter = formatter.wrap((delegate, value) => delegate(value))
     expect(wrappedFormatter.innerFormatter).toBe(formatter)
+  })
+
+  it("handles complex wrapping with structural changes", () => {
+    interface BasicDataContext {
+      index?: number
+    }
+
+    const basicFormatter = makeFormatter(
+      (value: string, suggestions, dataContext: BasicDataContext): string | undefined =>
+        value[dataContext.index ?? 0],
+    )
+
+    expect(basicFormatter.format("test", [], { index: 2 })).toBe("s")
+
+    interface ComplexStructure {
+      index: number
+      value: string
+    }
+
+    interface ComplexDataContext {
+      getIndex?: (structure: ComplexStructure) => number
+    }
+
+    const complexFormatter = basicFormatter.wrap(
+      (delegate, value: ComplexStructure, suggestions, dataContext: ComplexDataContext) =>
+        delegate(value.value, suggestions, { index: dataContext.getIndex?.(value) }),
+    )
+
+    expect(complexFormatter.format({ index: 3, value: "procrastination" })).toBe("p")
+
+    expect(
+      complexFormatter.format({ index: 3, value: "procrastination" }, [], {
+        getIndex: ({ index }) => index,
+      }),
+    ).toBe("c")
+
+    const boundComplexFormatter = complexFormatter.wrap(
+      (delegate, value, suggestions, dataContext) =>
+        delegate(value, suggestions, { ...dataContext, getIndex: ({ index }) => index }),
+    )
+
+    expect(boundComplexFormatter.format({ index: 2, value: "swag" })).toBe("a")
   })
 })
