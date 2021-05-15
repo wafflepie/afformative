@@ -9,6 +9,5 @@ cache:
   directories:
     - node_modules
 script:
-  - yarn
   - yarn test
   - yarn lint
