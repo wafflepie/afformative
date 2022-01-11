@@ -38,7 +38,7 @@
     "lerna": "4.0.0",
     "lint-staged": "11.0.0",
     "prettier": "2.2.1",
-    "ramda": "0.27.1",
+    "ramda": "0.27.2",
     "ramda-extension": "0.11.0",
     "rimraf": "3.0.2",
     "rollup": "2.47.0",
