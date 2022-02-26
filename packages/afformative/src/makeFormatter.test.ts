@@ -2,158 +2,217 @@ import { makeFormatter } from "./makeFormatter"
 
 const toUpperCase = (string: string) => string.toUpperCase()
 
+const upperCaseFormatter = makeFormatter<string, string>(toUpperCase)
+
+interface ValueRecord {
+  value: string
+}
+
+const valueRecordUpperCaseFormatter = makeFormatter<ValueRecord, ValueRecord, string>(
+  ({ value }, suggestions) => {
+    if (suggestions.includes("primitive")) {
+      return toUpperCase(value)
+    }
+
+    return { value: toUpperCase(value) }
+  },
+)
+
 describe("makeFormatter", () => {
-  it("handles trivial formatting", () => {
-    const formatter = makeFormatter<string, string>(toUpperCase)
-    expect(formatter.format("foo")).toBe("FOO")
+  const format = jest.fn()
+
+  afterEach(() => {
+    jest.clearAllMocks()
   })
 
-  it("accepts a `name` option", () => {
-    const formatter = makeFormatter<string, string>(toUpperCase, { displayName: "UpperFormatter" })
-    expect(formatter.displayName).toBe("UpperFormatter")
+  describe("displayName", () => {
+    it("accepts a `displayName` option", () => {
+      const displayName = "upperCaseFormatter"
+      const formatter = makeFormatter<string, string>(toUpperCase, { displayName })
+      expect(formatter.displayName).toBe(displayName)
+    })
   })
 
-  it("passes `suggestions` to `format`", () => {
-    const formatter = makeFormatter<string, string>((value, suggestions) => {
-      if (suggestions.includes("abbreviated")) {
-        return value[0]
-      }
-
-      return value
+  describe("format", () => {
+    it("handles trivial formatting", () => {
+      expect(upperCaseFormatter.format("foo")).toBe("FOO")
     })
 
-    expect(formatter.format("foo", ["abbreviated"])).toBe("f")
-    expect(formatter.format("foo", [])).toBe("foo")
-    expect(formatter.format("foo")).toBe("foo")
-  })
-
-  it("handles formatting with the `primitive` suggestion", () => {
-    type Structure = { value: string }
-
-    const formatter = makeFormatter<Structure, Structure, string>((value, suggestions) => {
-      if (suggestions.includes("primitive")) {
-        return value.value
-      }
-
-      return value
+    it("passes through non-empty suggestions", () => {
+      const formatter = makeFormatter<string, string>(format)
+      formatter.format("foo", ["abbreviated"])
+      expect(format.mock.calls[0][1]).toEqual(["abbreviated"])
     })
 
-    expect(formatter.format({ value: "foo" }, ["primitive"])).toBe("foo")
-    expect(formatter.formatAsPrimitive({ value: "foo" })).toBe("foo")
-    expect(formatter.formatAsPrimitive({ value: "foo" }, ["primitive"])).toBe("foo")
-  })
-
-  it("supports simple behavior wrapping", () => {
-    const formatter = makeFormatter<string, string>(toUpperCase)
-
-    const wrappedFormatter = formatter.wrap((delegate, value) =>
-      value === "foo" ? "override" : delegate(value),
-    )
-
-    expect(wrappedFormatter.format("foo")).toBe("override")
-    expect(wrappedFormatter.format("bar")).toBe("BAR")
-  })
-
-  it("supports simple behavior wrapping with suggestions", () => {
-    const formatter = makeFormatter<string, string>(toUpperCase)
-
-    const wrappedFormatter = formatter.wrap((delegate, value, suggestions) =>
-      value === "foo" && suggestions.includes("abbreviated") ? "f" : delegate(value),
-    )
-
-    expect(wrappedFormatter.format("foo")).toBe("FOO")
-    expect(wrappedFormatter.format("foo", ["abbreviated"])).toBe("f")
-    expect(wrappedFormatter.format("bar")).toBe("BAR")
-  })
-
-  it("supports simple behavior wrapping with the `primitive` suggestion", () => {
-    type Structure = { value: string }
-
-    const formatter = makeFormatter<string, string>(toUpperCase)
-
-    const wrappedFormatter = formatter.wrap<Structure, Structure, string>(
-      (delegate, value, suggestions) => (suggestions.includes("primitive") ? value.value : value),
-    )
-
-    expect(wrappedFormatter.format({ value: "foo" }, ["primitive"])).toBe("foo")
-    expect(wrappedFormatter.formatAsPrimitive({ value: "foo" })).toBe("foo")
-    expect(wrappedFormatter.formatAsPrimitive({ value: "foo" }, ["primitive"])).toBe("foo")
-  })
-
-  it("supports simple behavior wrapping with data context", () => {
-    const formatter = makeFormatter<string, string>(toUpperCase)
-
-    interface WrappedDataContext {
-      forcedValue?: string
-    }
-
-    const wrappedFormatter = formatter.wrap(
-      (delegate, value, suggestions, { forcedValue }: WrappedDataContext) =>
-        forcedValue ?? delegate(value),
-    )
-
-    expect(wrappedFormatter.format("foo")).toBe("FOO")
-    expect(wrappedFormatter.format("foo", undefined, { forcedValue: "override" })).toBe("override")
-  })
-
-  it("passes the original suggestions when they are not passed manually to `format` when wrapping", () => {
-    const formatter = makeFormatter<string, string>((value, suggestions) => {
-      if (suggestions.includes("abbreviated")) {
-        return value[0]
-      }
-
-      return value
+    it("passes through empty suggestions", () => {
+      const formatter = makeFormatter<string, string>(format)
+      formatter.format("foo", [])
+      expect(format.mock.calls[0][1]).toEqual([])
     })
 
-    const wrappedFormatter = formatter.wrap((delegate, value) => delegate(value))
-    expect(wrappedFormatter.format("foo", ["abbreviated"])).toBe("f")
+    it("defaults suggestions to an empty array", () => {
+      const formatter = makeFormatter<string, string>(format)
+      formatter.format("foo")
+      expect(format.mock.calls[0][1]).toEqual([])
+    })
+
+    it("passes through the `primitive` suggestion", () => {
+      const formatter = makeFormatter<string, string>(format)
+      formatter.format("foo", ["primitive"])
+      expect(format.mock.calls[0][1]).toEqual(["primitive"])
+    })
+
+    it("passes the `primitive` suggestion alongside `comparable` when missing", () => {
+      const formatter = makeFormatter<string, string>(format)
+      formatter.format("foo", ["comparable"])
+      expect(format.mock.calls[0][1]).toEqual(["primitive", "comparable"])
+    })
+
+    it("does not pass the `primitive` suggestion alongside other suggestions when missing", () => {
+      const formatter = makeFormatter<string, string>(format)
+      formatter.format("foo", ["abbreviated", "verbose"])
+      expect(format.mock.calls[0][1]).toEqual(["abbreviated", "verbose"])
+    })
+
+    it("supports data context", () => {
+      const formatter = makeFormatter<string, string>(format)
+      formatter.format("foo", [], { foo: "bar" })
+      expect(format.mock.calls[0][2]).toEqual({ foo: "bar" })
+    })
+
+    it("defaults data context to an empty object", () => {
+      const formatter = makeFormatter<string, string>(format)
+      formatter.format("foo")
+      expect(format.mock.calls[0][2]).toEqual({})
+    })
   })
 
-  it("sets the `innerFormatter` static property when wrapping", () => {
-    const formatter = makeFormatter<string, string>(toUpperCase)
-    const wrappedFormatter = formatter.wrap((delegate, value) => delegate(value))
-    expect(wrappedFormatter.innerFormatter).toBe(formatter)
+  describe("formatAsPrimitive", () => {
+    it("handles trivial formatting", () => {
+      expect(upperCaseFormatter.formatAsPrimitive("foo")).toBe("FOO")
+    })
+
+    it("passes the `primitive` suggestion when no suggestions are passed", () => {
+      const formatter = makeFormatter<string, string>(format)
+      formatter.formatAsPrimitive("foo")
+      expect(format.mock.calls[0][1]).toEqual(["primitive"])
+    })
+
+    it("passes the `primitive` suggestion when empty suggestions are passed", () => {
+      const formatter = makeFormatter<string, string>(format)
+      formatter.formatAsPrimitive("foo", [])
+      expect(format.mock.calls[0][1]).toEqual(["primitive"])
+    })
+
+    it("passes the `primitive` suggestion when a different suggestion is passed", () => {
+      const formatter = makeFormatter<string, string>(format)
+      formatter.formatAsPrimitive("foo", ["abbreviated"])
+      expect(format.mock.calls[0][1]).toEqual(["primitive", "abbreviated"])
+    })
+
+    it("passes through the `primitive` suggestion", () => {
+      const formatter = makeFormatter<string, string>(format)
+      formatter.formatAsPrimitive("foo", ["primitive"])
+      expect(format.mock.calls[0][1]).toEqual(["primitive"])
+    })
+
+    it("passes the `primitive` suggestion alongside `comparable`", () => {
+      const formatter = makeFormatter<string, string>(format)
+      formatter.formatAsPrimitive("foo", ["comparable"])
+      expect(format.mock.calls[0][1]).toEqual(["primitive", "comparable"])
+    })
+
+    it("supports data context", () => {
+      const formatter = makeFormatter<string, string>(format)
+      formatter.formatAsPrimitive("foo", [], { foo: "bar" })
+      expect(format.mock.calls[0][2]).toEqual({ foo: "bar" })
+    })
+
+    it("defaults data context to an empty object", () => {
+      const formatter = makeFormatter<string, string>(format)
+      formatter.formatAsPrimitive("foo")
+      expect(format.mock.calls[0][2]).toEqual({})
+    })
   })
 
-  it("handles complex wrapping with structural changes", () => {
-    interface BasicDataContext {
-      index?: number
-    }
+  describe("wrap", () => {
+    it("handles trivial wrapping", () => {
+      const formatter = makeFormatter<string, string>(format).wrap(() => "bar")
+      expect(formatter.format("foo")).toBe("bar")
+    })
 
-    const basicFormatter = makeFormatter(
-      (value: string, suggestions, dataContext: BasicDataContext): string | undefined =>
-        value[dataContext.index ?? 0],
-    )
+    it("handles single-value mapping", () => {
+      const formatter = makeFormatter<string, string>(format).wrap((delegate, value) =>
+        value === "ping" ? "pong" : delegate(value),
+      )
 
-    expect(basicFormatter.format("test", [], { index: 2 })).toBe("s")
+      expect(formatter.format("ping")).toBe("pong")
+    })
 
-    interface ComplexStructure {
-      index: number
-      value: string
-    }
+    it("handles delegation to the original formatter", () => {
+      const formatter = upperCaseFormatter.wrap((delegate, value) =>
+        value === "ping" ? "pong" : delegate(value),
+      )
 
-    interface ComplexDataContext {
-      getIndex?: (structure: ComplexStructure) => number
-    }
+      expect(formatter.format("foo")).toBe("FOO")
+    })
 
-    const complexFormatter = basicFormatter.wrap(
-      (delegate, value: ComplexStructure, suggestions, dataContext: ComplexDataContext) =>
-        delegate(value.value, suggestions, { index: dataContext.getIndex?.(value) }),
-    )
+    it("sets the `innerFormatter` property", () => {
+      const wrappedFormatter = upperCaseFormatter.wrap((delegate, value) => delegate(value))
+      expect(wrappedFormatter.innerFormatter).toBe(upperCaseFormatter)
+    })
 
-    expect(complexFormatter.format({ index: 3, value: "procrastination" })).toBe("p")
+    it("passes the `primitive` suggestion to `delegate` when using `formatAsPrimitive`", () => {
+      const formatter = valueRecordUpperCaseFormatter.wrap((delegate, value) => delegate(value))
+      expect(formatter.formatAsPrimitive({ value: "foo" })).toBe("FOO")
+    })
 
-    expect(
-      complexFormatter.format({ index: 3, value: "procrastination" }, [], {
-        getIndex: ({ index }) => index,
-      }),
-    ).toBe("c")
+    it("passes suggestions through to `delegate` when not overriden", () => {
+      const formatter = valueRecordUpperCaseFormatter.wrap((delegate, value) => delegate(value))
+      expect(formatter.format({ value: "foo" }, ["primitive"])).toBe("FOO")
+    })
 
-    const boundComplexFormatter = complexFormatter.wrap(
-      (delegate, value, suggestions, dataContext) =>
-        delegate(value, suggestions, { ...dataContext, getIndex: ({ index }) => index }),
-    )
+    it("supports overriding of suggestions for `delegate`", () => {
+      const formatter = valueRecordUpperCaseFormatter.wrap((delegate, value) => delegate(value, []))
+      expect(formatter.format({ value: "foo" }, ["primitive"])).toEqual({ value: "FOO" })
+    })
 
-    expect(boundComplexFormatter.format({ index: 2, value: "swag" })).toBe("a")
+    it("supports modifying the input structure", () => {
+      const formatter = upperCaseFormatter.wrap<ValueRecord>((delegate, { value }) =>
+        delegate(value),
+      )
+
+      expect(formatter.format({ value: "foo" })).toBe("FOO")
+    })
+
+    it("supports modifying the output structure", () => {
+      const formatter = upperCaseFormatter.wrap<ValueRecord, ValueRecord>(
+        (delegate, { value }) => ({ value: delegate(value) }),
+      )
+
+      expect(formatter.format({ value: "foo" })).toEqual({ value: "FOO" })
+    })
+
+    it("supports modifying the data context structure", () => {
+      interface ListContext {
+        row: string
+      }
+
+      const listFormatter = upperCaseFormatter.wrap<string, string, string, ListContext>(
+        (delegate, value, suggestions, { row }) => `${row}: ${delegate(value)}`,
+      )
+
+      interface GridContext extends ListContext {
+        column: string
+      }
+
+      expect(listFormatter.format("foo", [], { row: "A" })).toBe("A: FOO")
+
+      const gridFormatter = listFormatter.wrap<string, string, string, GridContext>(
+        (delegate, value, suggestions, { column }) => delegate(value).replace(":", `${column}:`),
+      )
+
+      expect(gridFormatter.format("foo", [], { row: "B", column: "1" })).toBe("B1: FOO")
+    })
   })
 })
