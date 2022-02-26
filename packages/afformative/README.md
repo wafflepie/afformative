@@ -81,13 +81,13 @@ Although formatters can render icons or custom translation components, we often 
 
 > Lexicographic sorting of items based on translations is a typical real world example, especially when you are using a custom React component for visualising the translation keys alongside the actual translations.
 
-This is where usage suggestions comes into play. Suggestions can be used to tell formatters that a value needs to be rendered with some special care. For example, pass `"primitive"` to tell a formatter that it should return a primitive value, such as a string.
+This is where usage suggestions come into play. Suggestions can be used to tell formatters that a value needs to be rendered with some special care. For example, pass `"primitive"` to tell a formatter that it should return a primitive value, such as a string.
 
 ```js
 import { makeFormatter } from "afformative"
 
-const booleanFormatter = makeFormatter((value, usageSuggestions) => {
-  if (usageSuggestions.includes("primitive")) {
+const booleanFormatter = makeFormatter((value, suggestions) => {
+  if (suggestions.includes("primitive")) {
     return value ? "True" : "False"
   }
 
