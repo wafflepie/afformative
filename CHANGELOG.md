@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## 0.6.3 [2022-02-26]
+
+### Added
+
+- The `"comparable"` primitive suggestion.
+  - This suggestion should be used by all components which rely on formatter logic for sorting.
+  - Passing the `"comparable"` suggestion to a formatter will automatically pass `"primitive"` as well.
+- The `"as-icon"` and `"with-icon"` suggestions.
+  - Intended as a replacement for the ambiguous `"icon"` suggestion, which has been deprecated.
+
 ## 0.6.2 [2021-05-14]
 
 ### Added
