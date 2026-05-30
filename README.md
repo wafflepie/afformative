@@ -52,7 +52,7 @@ const dateFormatter = createFormatter<Date, ReactNode>({
 })
 
 dateFormatter.format(new Date()) // <time dateTime="2026-05-30T09:17:26.263Z">30/05/2026</time>
-dateFormatter.formatAsString(new Date()) // "30/05/2026"
+dateFormatter.stringify(new Date()) // "30/05/2026"
 ```
 
 Consume formatters in your UI component library via a conventional `formatter` prop.
@@ -176,10 +176,13 @@ const useEnumFormatter = (enumType: string): Formatter<string, ReactNode> => {
 
   return useMemo(
     () =>
-      createFormatter<string, ReactNode>(
-        value => <FormattedMessage defaultMessage={value} id={enumTranslationKeys[value]} />,
-        value => intl.formatMessage({ defaultMessage: value, id: enumTranslationKeys[value] }),
-      ),
+      createFormatter<string, ReactNode>({
+        format: value => (
+          <FormattedMessage defaultMessage={value} id={enumTranslationKeys[value]} />
+        ),
+        stringify: value =>
+          intl.formatMessage({ defaultMessage: value, id: enumTranslationKeys[value] }),
+      }),
     [intl, enumTranslationKeys],
   )
 }
