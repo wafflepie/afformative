@@ -211,6 +211,9 @@ declare module "afformative" {
 const colorfulFormatter = createFormatter<string, ReactNode>({
   format: value => <Colorful>{value}</Colorful>,
   stringify: value => value,
+  meta: {
+    isPrintFriendly: true,
+  },
 })
 
 interface PrinterProps {
