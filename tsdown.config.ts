@@ -1,6 +1,9 @@
 import { defineConfig } from "tsdown"
 
 export default defineConfig({
-  format: ["esm", "cjs"],
   exports: true,
+  format: ["esm", "cjs"],
+  platform: "browser",
+  sourcemap: true,
+  target: "es2023",
 })
