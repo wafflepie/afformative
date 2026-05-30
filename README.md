@@ -1,0 +1,194 @@
+<h1 align="center">
+afformative
+</h1>
+
+<h3 align="center">
+✅ ✍️ 👀
+</h3>
+
+<h3 align="center">
+A standardized way to format values in your React components.
+</h3>
+
+<p align="center">
+Afformative helps UI component libraries display arbitrary data in a reusable, plug-and-play fashion. Formatting dates and enum translations in your select fields and data grids has never been easier.
+</p>
+
+<p align="center">
+  <a href="https://github.com/wafflepie/afformative/blob/master/LICENSE">
+    <img src="https://flat.badgen.net/badge/license/MIT/blue" alt="MIT License" />
+  </a>
+
+  <a href="https://npmjs.com/package/afformative">
+    <img src="https://flat.badgen.net/npm/v/afformative" alt="Version" />
+  </a>
+</p>
+
+## Installation
+
+Use one of these commands, depending on your preferred package manager:
+
+```sh
+yarn add afformative
+
+pnpm add afformative
+
+npm i afformative
+```
+
+## Quick Start
+
+A formatter is an object with `format`, `stringify`, and `compare` methods. Formatters must be created using the `createFormatter` function.
+
+`createFormatter` accepts a single object parameter. `format` is the only required property, but specifying `stringify` is recommended in most cases.
+
+```tsx
+import { createFormatter } from "afformative"
+import { ReactNode } from "react"
+
+const dateFormatter = createFormatter<Date, ReactNode>({
+  format: value => <time dateTime={value.toISOString()}>{value.toLocaleDateString()}</time>,
+  stringify: value => value.toLocaleDateString(),
+})
+
+dateFormatter.format(new Date()) // <time dateTime="2026-05-30T09:17:26.263Z">30/05/2026</time>
+dateFormatter.formatAsString(new Date()) // "30/05/2026"
+```
+
+Consume formatters in your UI component library via a conventional `formatter` prop.
+
+```tsx
+import { Formatter } from "afformative"
+import { ReactNode } from "react"
+
+interface ListProps<TItem> {
+  formatter: Formatter<TItem, ReactNode>
+  items: TItem[]
+}
+
+const List = <TItem extends unknown>({ formatter, items }: ListProps<TItem>) => (
+  <ul>
+    {items.map(item => (
+      <li key={formatter.stringify(item)}>{formatter.format(item)}</li>
+    ))}
+  </ul>
+)
+```
+
+The `stringify` method is useful when you need a plain string representation of a value. For example, a combobox component can use it to match items against the user's typed input.
+
+## Compare
+
+Every formatter exposes a `compare` method, which can be used to sort values. The default implementation compares the return values of `stringify` via `localeCompare`. In the following example, `Amount` objects are sorted first by currency, then by value.
+
+```tsx
+import { createFormatter } from "afformative"
+import { ReactNode } from "react"
+
+interface Amount {
+  currency: string
+  value: number
+}
+
+const amountFormatter = createFormatter<Amount, ReactNode>({
+  format: ({ currency, value }) => (
+    <span className="currency">{`${currency} ${value.toFixed(2)}`}</span>
+  ),
+  stringify: ({ currency, value }) => `${currency} ${value.toFixed(2)}`,
+  compare: (a, b) => a.currency.localeCompare(b.currency) || a.value - b.value,
+})
+
+const amounts: Amount[] = [
+  { currency: "USD", value: 3 },
+  { currency: "EUR", value: 1 },
+  { currency: "EUR", value: 5 },
+  { currency: "USD", value: 2 },
+]
+
+amounts.sort(amountFormatter.compare)
+// [{ EUR, 1 }, { EUR, 5 }, { USD, 2 }, { USD, 3 }]
+```
+
+## Usage Context
+
+You can pass an optional usage context object to all formatter methods. Let's use a dummy table component as an example.
+
+```tsx
+import { Formatter } from "afformative"
+import { ReactNode } from "react"
+
+interface TableFormatterUsageContext {
+  row: number[]
+  cellIndex: number
+}
+
+interface TableProps {
+  rows: number[][]
+  formatter: Formatter<number, ReactNode, TableFormatterUsageContext>
+}
+
+const Table = ({ rows, formatter }: TableProps) => (
+  <table>
+    {rows.map(row => (
+      <tr>
+        {row.map((cell, cellIndex) => (
+          <td>{formatter.format(cell, { row, cellIndex })}</td>
+        ))}
+      </tr>
+    ))}
+  </table>
+)
+```
+
+Usage context allows the users of this table component to write purpose-built formatters, making it possible to take other values in the same row into account. For example, the following formatter would change the color of the cell value based on the previous value in the same row.
+
+```tsx
+import { createFormatter } from "afformative"
+import { ReactNode } from "react"
+
+import { TableFormatterUsageContext } from "./Table"
+
+const rowTrendFormatter = createFormatter<number, ReactNode, TableFormatterUsageContext>({
+  format: (value, { row, cellIndex }) => {
+    if (cellIndex === 0) {
+      return <span>{value}</span>
+    }
+
+    const previousValue = row[cellIndex - 1]
+
+    return <span style={{ color: value >= previousValue ? "green" : "red" }}>{value}</span>
+  },
+})
+```
+
+This formatter only makes sense in the context of our table component.
+
+Because `row` and `cellIndex` are passed as the usage context, the formatter still receives only the cell value as its first parameter. This means generic formatters (e.g. a currency formatter) can be passed to the table component without any changes.
+
+## Accessing React Context
+
+Create formatters inside custom hooks to access React context values such as translations or application state.
+
+```tsx
+const useEnumFormatter = (enumType: string): Formatter<string, ReactNode> => {
+  const enumTranslationKeys = useSelector(selectEnumTranslationKeys(enumType))
+  const intl = useIntl()
+
+  return useMemo(
+    () =>
+      createFormatter<string, ReactNode>(
+        value => <FormattedMessage defaultMessage={value} id={enumTranslationKeys[value]} />,
+        value => intl.formatMessage({ defaultMessage: value, id: enumTranslationKeys[value] }),
+      ),
+    [intl, enumTranslationKeys],
+  )
+}
+```
+
+## Changelog
+
+See the [CHANGELOG.md](https://github.com/wafflepie/afformative/blob/master/CHANGELOG.md) file.
+
+## License
+
+All packages are distributed under the MIT license. See the license [here](https://github.com/wafflepie/afformative/blob/master/LICENSE).

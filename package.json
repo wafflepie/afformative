@@ -1,61 +1,61 @@
 {
-  "name": "@afformative/monorepo",
-  "version": "0.1.0",
-  "private": true,
-  "license": "MIT",
+  "name": "afformative",
+  "version": "0.6.3",
+  "description": "A standardized way to format values in your React components.",
+  "keywords": [
+    "react",
+    "component",
+    "components",
+    "formatting",
+    "formatter",
+    "formatters",
+    "format",
+    "moment",
+    "react-intl",
+    "entity",
+    "enum",
+    "arbitrary",
+    "value",
+    "values"
+  ],
   "repository": "https://github.com/wafflepie/afformative",
+  "license": "MIT",
   "contributors": [
-    "Vaclav Jancarik <vaclav.janc@gmail.com>"
+    "Vaclav Jancarik <hi@wafflepie.dev>"
   ],
-  "engines": {
-    "node": ">=12"
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
   },
-  "workspaces": [
-    "packages/*"
+  "files": [
+    "dist"
   ],
-  "devDependencies": {
-    "@babel/core": "7.17.5",
-    "@babel/plugin-transform-modules-commonjs": "7.16.8",
-    "@babel/plugin-transform-runtime": "7.17.0",
-    "@babel/preset-env": "7.16.11",
-    "@babel/preset-typescript": "7.16.7",
-    "@rollup/plugin-babel": "5.3.1",
-    "@rollup/plugin-commonjs": "21.0.2",
-    "@rollup/plugin-node-resolve": "13.1.3",
-    "@rollup/plugin-replace": "4.0.0",
-    "@types/jest": "27.4.1",
-    "@typescript-eslint/eslint-plugin": "^5.12.1",
-    "@typescript-eslint/parser": "^5.12.1",
-    "babel-core": "7.0.0-bridge.0",
-    "babel-jest": "27.5.1",
-    "cross-env": "7.0.3",
-    "eslint": "8.10.0",
-    "eslint-config-airbnb-base": "15.0.0",
-    "eslint-config-prettier": "8.4.0",
-    "eslint-plugin-import": "2.25.4",
-    "husky": "7.0.4",
-    "jest": "27.5.1",
-    "lerna": "4.0.0",
-    "lint-staged": "12.3.4",
-    "prettier": "2.5.1",
-    "ramda": "0.28.0",
-    "ramda-extension": "0.11.0",
-    "rimraf": "3.0.2",
-    "rollup": "2.68.0",
-    "rollup-plugin-auto-external": "2.0.0",
-    "rollup-plugin-terser": "7.0.2",
-    "typescript": "4.5.5"
-  },
   "scripts": {
-    "test": "jest",
-    "clean": "lerna exec -- rimraf dist",
-    "build": "yarn clean && yarn build:rollup && yarn build:tsc",
-    "build:rollup": "lerna exec -- rollup -c=../../rollup.config.js",
-    "build:tsc": "lerna exec -- tsc --project tsconfig.build.json --emitDeclarationOnly",
-    "lint": "eslint --ignore-path .gitignore ./",
-    "prepublish": "yarn build",
-    "prepublishOnly": "yarn",
-    "lernaPublish": "lerna publish",
-    "prepare": "husky install"
+    "build": "tsdown",
+    "prepublishOnly": "pnpm run build",
+    "release": "bumpp",
+    "test": "pnpm test:prettier && pnpm run test:typescript && pnpm run test:eslint && pnpm run test:vitest",
+    "test:eslint": "eslint src",
+    "test:prettier": "prettier --check src",
+    "test:typescript": "tsc --noEmit",
+    "test:vitest": "vitest run"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.6.2",
+    "@typescript/native-preview": "^7.0.0-dev.20260527.2",
+    "bumpp": "^11.1.0",
+    "eslint": "^10.4.1",
+    "prettier": "^3.8.3",
+    "tsdown": "^0.22.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.60.0",
+    "vitest": "^4.1.7"
+  },
+  "packageManager": "pnpm@11.5.0+sha512.dbfcc4f81cf48597afd4bc391ffdf12c11f1a9fb83a395bfa6b0a2d9cc2fd8ffebafdb1ccbd529632153f793904c2615b7f09fe1a345473fd1c35845172a8eb1",
+  "publishConfig": {
+    "access": "public"
   }
 }

@@ -1,1 +1,0 @@
-../packages/afformative/README.md
