@@ -46,7 +46,7 @@
     "test:eslint": "eslint src",
     "test:prettier": "prettier --check src",
     "test:typescript": "tsc --noEmit",
-    "test:vitest": "vitest run"
+    "test:vitest": "vitest run --typecheck"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

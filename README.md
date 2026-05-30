@@ -109,22 +109,22 @@ amounts.sort(amountFormatter.compare)
 // [{ EUR, 1 }, { EUR, 5 }, { USD, 2 }, { USD, 3 }]
 ```
 
-## Usage Context
+## Context
 
-You can pass an optional usage context object to all formatter methods. Let's use a dummy table component as an example.
+You can pass context to all formatter methods. Let's use a dummy table component as an example.
 
 ```tsx
 import { Formatter } from "afformative"
 import { ReactNode } from "react"
 
-interface TableFormatterUsageContext {
+interface TableFormatterContext {
   row: number[]
   cellIndex: number
 }
 
 interface TableProps {
   rows: number[][]
-  formatter: Formatter<number, ReactNode, TableFormatterUsageContext>
+  formatter: Formatter<number, ReactNode, TableFormatterContext>
 }
 
 const Table = ({ rows, formatter }: TableProps) => (
@@ -140,17 +140,17 @@ const Table = ({ rows, formatter }: TableProps) => (
 )
 ```
 
-Usage context allows the users of this table component to write purpose-built formatters, making it possible to take other values in the same row into account. For example, the following formatter would change the color of the cell value based on the previous value in the same row.
+Context allows the users of this table component to write purpose-built formatters, making it possible to take other values in the same row into account. For example, the following formatter would change the color of the cell value based on the previous value in the same row.
 
 ```tsx
 import { createFormatter } from "afformative"
 import { ReactNode } from "react"
 
-import { TableFormatterUsageContext } from "./Table"
+import { TableFormatterContext } from "./Table"
 
-const rowTrendFormatter = createFormatter<number, ReactNode, TableFormatterUsageContext>({
-  format: (value, { row, cellIndex }) => {
-    if (cellIndex === 0) {
+const rowTrendFormatter = createFormatter<number, ReactNode, TableFormatterContext>({
+  format: (value, { row, cellIndex } = {}) => {
+    if (!cellIndex || !row) {
       return <span>{value}</span>
     }
 
@@ -163,7 +163,7 @@ const rowTrendFormatter = createFormatter<number, ReactNode, TableFormatterUsage
 
 This formatter only makes sense in the context of our table component.
 
-Because `row` and `cellIndex` are passed as the usage context, the formatter still receives only the cell value as its first parameter. This means generic formatters (e.g. a currency formatter) can be passed to the table component without any changes.
+Because `row` and `cellIndex` are passed as context, the formatter still receives only the cell value as its first parameter. This means generic formatters (e.g. a currency formatter) can be passed to the table component without any changes.
 
 ## Accessing React Context
 

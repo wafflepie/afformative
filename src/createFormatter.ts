@@ -1,61 +1,51 @@
-export interface FormatterFormatDefinition<TInput, TOutput, TUsageContext extends object = object> {
-  (value: TInput, usageContext: Partial<TUsageContext>): TOutput
+export interface FormatterFormat<TInput, TOutput, TContext = unknown> {
+  (value: TInput, ctx?: TContext): TOutput
 }
 
-export interface FormatterFormat<TInput, TOutput, TUsageContext extends object = object> {
-  (value: TInput, usageContext?: Partial<TUsageContext>): TOutput
+export interface FormatterStringify<TInput, TContext = unknown> {
+  (value: TInput, ctx?: TContext): string
 }
 
-export interface FormatterStringifyDefinition<TInput, TUsageContext extends object = object> {
-  (value: TInput, usageContext: Partial<TUsageContext>): string
+export interface FormatterCompare<TInput, TContext = unknown> {
+  (a: TInput, b: TInput, ctx?: TContext): number
 }
 
-export interface FormatterStringify<TInput, TUsageContext extends object = object> {
-  (value: TInput, usageContext?: Partial<TUsageContext>): string
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-unused-vars
+export interface FormatterMeta<TInput, TOutput, TContext = unknown> {}
+
+export interface Formatter<TInput, TOutput, TContext = unknown> {
+  compare: FormatterCompare<TInput, TContext>
+  format: FormatterFormat<TInput, TOutput, TContext>
+  stringify: FormatterStringify<TInput, TContext>
+  meta?: FormatterMeta<TInput, TOutput, TContext>
 }
 
-export interface FormatterCompareDefinition<TInput, TUsageContext extends object = object> {
-  (a: TInput, b: TInput, usageContext: Partial<TUsageContext>): number
+export interface CreateFormatterParam<TInput, TOutput, TContext = unknown> {
+  compare?: FormatterCompare<TInput, TContext>
+  format: FormatterFormat<TInput, TOutput, TContext>
+  stringify?: FormatterStringify<TInput, TContext>
+  meta?: FormatterMeta<TInput, TOutput, TContext>
 }
 
-export interface FormatterCompare<TInput, TUsageContext extends object = object> {
-  (a: TInput, b: TInput, usageContext?: Partial<TUsageContext>): number
-}
+export const createFormatter = <TInput, TOutput, TContext = unknown>(
+  param: CreateFormatterParam<TInput, TOutput, TContext>,
+): Formatter<TInput, TOutput, TContext> => {
+  const { format: formatParam, stringify: stringifyParam, compare: compareParam, meta } = param
 
-export interface Formatter<TInput, TOutput, TUsageContext extends object = object> {
-  compare: FormatterCompare<TInput, TUsageContext>
-  format: FormatterFormat<TInput, TOutput, TUsageContext>
-  stringify: FormatterStringify<TInput, TUsageContext>
-  name?: string
-}
+  const format: FormatterFormat<TInput, TOutput, TContext> = (value, ctx) => formatParam(value, ctx)
 
-export interface CreateFormatterParam<TInput, TOutput, TUsageContext extends object = object> {
-  compare?: FormatterCompareDefinition<TInput, TUsageContext>
-  format: FormatterFormatDefinition<TInput, TOutput, TUsageContext>
-  stringify?: FormatterStringifyDefinition<TInput, TUsageContext>
-}
+  const stringify: FormatterStringify<TInput, TContext> = stringifyParam
+    ? (value, ctx) => stringifyParam(value, ctx)
+    : (value, ctx) => String(format(value, ctx))
 
-export const createFormatter = <TInput, TOutput, TUsageContext extends object = object>(
-  param: CreateFormatterParam<TInput, TOutput, TUsageContext>,
-): Formatter<TInput, TOutput, TUsageContext> => {
-  const { format: formatParam, stringify: stringifyParam, compare: compareParam, ...rest } = param
-
-  const format: FormatterFormat<TInput, TOutput, TUsageContext> = (value, usageContext) =>
-    formatParam(value, usageContext ?? {})
-
-  const stringify: FormatterStringify<TInput, TUsageContext> = stringifyParam
-    ? (value, usageContext) => stringifyParam(value, usageContext ?? {})
-    : (value, usageContext) => String(format(value, usageContext ?? {}))
-
-  const compare: FormatterCompare<TInput, TUsageContext> = compareParam
-    ? (a, b, usageContext) => compareParam(a, b, usageContext ?? {})
-    : (a, b, usageContext) =>
-        stringify(a, usageContext ?? {}).localeCompare(stringify(b, usageContext ?? {}))
+  const compare: FormatterCompare<TInput, TContext> = compareParam
+    ? (a, b, ctx) => compareParam(a, b, ctx)
+    : (a, b, ctx) => stringify(a, ctx).localeCompare(stringify(b, ctx))
 
   return {
     compare,
     format,
     stringify,
-    ...rest,
+    meta,
   }
 }
