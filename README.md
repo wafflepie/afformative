@@ -38,6 +38,8 @@ npm i afformative
 
 ## Quick Start
 
+Afformative is framework-agnostic, but this section will assume usage with React.
+
 A formatter is an object with `format`, `stringify`, and `compare` methods. Formatters must be created using the `createFormatter` function.
 
 `createFormatter` accepts a single object parameter. `format` is the only required property, but specifying `stringify` is recommended in most cases.
@@ -49,6 +51,7 @@ import { ReactNode } from "react"
 const dateFormatter = createFormatter<Date, ReactNode>({
   format: value => <time dateTime={value.toISOString()}>{value.toLocaleDateString()}</time>,
   stringify: value => value.toLocaleDateString(),
+  compare: value => value.valueOf(),
 })
 
 dateFormatter.format(new Date()) // <time dateTime="2026-05-30T09:17:26.263Z">30/05/2026</time>
@@ -75,11 +78,36 @@ const List = <TItem extends unknown>({ formatter, items }: ListProps<TItem>) => 
 )
 ```
 
-The `stringify` method is useful when you need a plain string representation of a value. For example, a combobox component can use it to match items against the user's typed input.
+The `stringify` method is useful when you need a plain string representation of a value. For example, a combobox component can use it to match items against the user's typed input. The default implementation of `stringify` is simply `String(format(value))`.
 
-## Compare
+## Accessing State
 
-Every formatter exposes a `compare` method, which can be used to sort values. The default implementation compares the return values of `stringify` via `localeCompare`. In the following example, `Amount` objects are sorted first by currency, then by value.
+Create formatters inside hooks to access React context.
+
+```tsx
+const useEnumFormatter = (enumType: string): Formatter<string, ReactNode> => {
+  const enumTranslationKeys = useSelector(selectEnumTranslationKeys(enumType))
+  const intl = useIntl()
+
+  return useMemo(
+    () =>
+      createFormatter<string, ReactNode>({
+        format: value => (
+          <FormattedMessage defaultMessage={value} id={enumTranslationKeys[value]} />
+        ),
+        stringify: value =>
+          intl.formatMessage({ defaultMessage: value, id: enumTranslationKeys[value] }),
+      }),
+    [intl, enumTranslationKeys],
+  )
+}
+```
+
+## Comparing Values
+
+Every formatter exposes a `compare` method which can be directly passed to `Array.prototype.sort`. The default implementation compares the return values of `stringify` via `localeCompare`.
+
+In the following example, `Amount` objects are sorted first by currency, then by value.
 
 ```tsx
 import { createFormatter } from "afformative"
@@ -109,7 +137,7 @@ amounts.sort(amountFormatter.compare)
 // [{ EUR, 1 }, { EUR, 5 }, { USD, 2 }, { USD, 3 }]
 ```
 
-## Context
+## Formatter Context
 
 You can pass context to all formatter methods. Let's use a dummy table component as an example.
 
@@ -140,7 +168,9 @@ const Table = ({ rows, formatter }: TableProps) => (
 )
 ```
 
-Context allows the users of this table component to write purpose-built formatters, making it possible to take other values in the same row into account. For example, the following formatter would change the color of the cell value based on the previous value in the same row.
+Context allows the users of this table component to write purpose-built formatters, making it possible to take other values in the same row into account.
+
+For example, the following formatter would change the color of the cell value based on the previous value in the same row.
 
 ```tsx
 import { createFormatter } from "afformative"
@@ -165,26 +195,31 @@ This formatter only makes sense in the context of our table component.
 
 Because `row` and `cellIndex` are passed as context, the formatter still receives only the cell value as its first parameter. This means generic formatters (e.g. a currency formatter) can be passed to the table component without any changes.
 
-## Accessing React Context
+## Formatter Meta
 
-Create formatters inside custom hooks to access React context values such as translations or application state.
+As explained above, context can be used to pass information from the consumer to the formatter. The `meta` property can be used to pass information from the formatter to the consumer instead. The base `FormatterMeta` interface is extensible via declaration merging.
+
+For example, formatters can explicily mark themselves as print-friendly. Consumers may then decide to use `stringify` instead of `format` based on this flag.
 
 ```tsx
-const useEnumFormatter = (enumType: string): Formatter<string, ReactNode> => {
-  const enumTranslationKeys = useSelector(selectEnumTranslationKeys(enumType))
-  const intl = useIntl()
+declare module "afformative" {
+  interface FormatterMeta<TInput, TOutput, TContext> {
+    isPrintFriendly?: boolean
+  }
+}
 
-  return useMemo(
-    () =>
-      createFormatter<string, ReactNode>({
-        format: value => (
-          <FormattedMessage defaultMessage={value} id={enumTranslationKeys[value]} />
-        ),
-        stringify: value =>
-          intl.formatMessage({ defaultMessage: value, id: enumTranslationKeys[value] }),
-      }),
-    [intl, enumTranslationKeys],
-  )
+const colorfulFormatter = createFormatter<string, ReactNode>({
+  format: value => <Colorful>{value}</Colorful>,
+  stringify: value => value,
+})
+
+interface PrinterProps {
+  content: string
+  formatter: Formatter<string, ReactNode>
+}
+
+const Printer = ({ content, formatter }: PrinterProps) => {
+  return formatter.meta?.isPrintFriendly ? formatter.format(content) : formatter.stringify(content)
 }
 ```
 

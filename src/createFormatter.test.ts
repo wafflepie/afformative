@@ -68,6 +68,19 @@ describe("createFormatter", () => {
     })
   })
 
+  describe("meta", () => {
+    it("is undefined when not provided", () => {
+      const formatter = createFormatter<number, number>({ format: value => value })
+      expect(formatter.meta).toBeUndefined()
+    })
+
+    it("is the provided meta object", () => {
+      const meta = {}
+      const formatter = createFormatter<number, number>({ format: value => value, meta })
+      expect(formatter.meta).toBe(meta)
+    })
+  })
+
   describe("compare", () => {
     describe("when a custom compare is provided", () => {
       it("uses the provided compare function", () => {
