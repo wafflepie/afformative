@@ -1,6 +1,6 @@
 {
   "name": "afformative",
-  "version": "0.7.0-beta.5",
+  "version": "0.7.0",
   "description": "A standardized way to format values in your React components.",
   "keywords": [
     "react",
