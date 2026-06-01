@@ -4,13 +4,13 @@ import { createFormatter } from "./createFormatter"
 describe("createFormatter", () => {
   describe("format", () => {
     it("returns the formatted value", () => {
-      const formatter = createFormatter<number, number>({ format: (value: number) => value * 2 })
-      expect(formatter.format(5)).toBe(10)
+      const formatter = createFormatter<number, string>({ format: value => String(value * 2) })
+      expect(formatter.format(5)).toBe("10")
     })
 
     it("passes context to the format function", () => {
       const formatFn = vi.fn()
-      const formatter = createFormatter<number, number, { multiplier: number }>({
+      const formatter = createFormatter<number, string, { multiplier: number }>({
         format: formatFn,
       })
       formatter.format(3, { multiplier: 4 })
@@ -48,8 +48,8 @@ describe("createFormatter", () => {
     })
 
     describe("when no stringify is provided", () => {
-      it("falls back to String() applied to the formatted value", () => {
-        const formatter = createFormatter<number, number>({ format: value => value * 3 })
+      it("returns the formatted value as a string", () => {
+        const formatter = createFormatter<number, string>({ format: value => String(value * 3) })
         expect(formatter.stringify(4)).toBe("12")
       })
 
@@ -61,8 +61,8 @@ describe("createFormatter", () => {
       })
 
       it("passes context through to the format function", () => {
-        const formatter = createFormatter<number, number, { offset: number }>({
-          format: (value, ctx) => value + (ctx?.offset ?? 0),
+        const formatter = createFormatter<number, string, { offset: number }>({
+          format: (value, ctx) => String(value + (ctx?.offset ?? 0)),
         })
         expect(formatter.stringify(10, { offset: 5 })).toBe("15")
       })
@@ -71,13 +71,13 @@ describe("createFormatter", () => {
 
   describe("meta", () => {
     it("is undefined when not provided", () => {
-      const formatter = createFormatter<number, number>({ format: value => value })
+      const formatter = createFormatter<string, string>({ format: value => value })
       expect(formatter.meta).toBeUndefined()
     })
 
     it("is the provided meta object", () => {
       const meta = {}
-      const formatter = createFormatter<number, number>({ format: value => value, meta })
+      const formatter = createFormatter<string, string>({ format: value => value, meta })
       expect(formatter.meta).toBe(meta)
     })
   })
@@ -85,23 +85,23 @@ describe("createFormatter", () => {
   describe("compare", () => {
     describe("when a custom compare is provided", () => {
       it("uses the provided compare function", () => {
-        const formatter = createFormatter<number, number>({
+        const formatter = createFormatter<string, string>({
           format: value => value,
-          compare: (a, b) => a - b,
+          compare: (a, b) => a.length - b.length,
         })
-        expect(formatter.compare(1, 2)).toBeLessThan(0)
-        expect(formatter.compare(2, 1)).toBeGreaterThan(0)
-        expect(formatter.compare(3, 3)).toBe(0)
+        expect(formatter.compare("b", "aa")).toBeLessThan(0)
+        expect(formatter.compare("bb", "a")).toBeGreaterThan(0)
+        expect(formatter.compare("bbb", "aaa")).toBe(0)
       })
 
       it("passes context to the compare function", () => {
         const compareFn = vi.fn()
-        const formatter = createFormatter<number, number, { someKey: boolean }>({
+        const formatter = createFormatter<string, string, { someKey: boolean }>({
           format: value => value,
           compare: compareFn,
         })
-        formatter.compare(1, 2, { someKey: true })
-        expect(compareFn).toHaveBeenCalledWith(1, 2, { someKey: true })
+        formatter.compare("a", "b", { someKey: true })
+        expect(compareFn).toHaveBeenCalledWith("a", "b", { someKey: true })
       })
     })
 

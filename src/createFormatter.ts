@@ -80,7 +80,7 @@ export interface Formatter<TInput, TOutput, TContext = unknown> {
 /**
  * Parameter object accepted by `createFormatter`.
  *
- * `format` is always required. `stringify` is required when `TOutput` is not `string | number`,
+ * `format` is always required. `stringify` is required when `TOutput` is not `string`,
  * since there is no safe default in that case. `compare` and `meta` are always optional.
  *
  * @typeParam TInput - The type of value the formatter accepts.
@@ -94,7 +94,7 @@ export type CreateFormatterParam<TInput, TOutput, TContext = unknown> = {
   format: FormatterFormat<TInput, TOutput, TContext>
   /** Optional metadata passed from the formatter to its consumer. */
   meta?: FormatterMeta<TInput, TOutput, TContext>
-} & ([TOutput] extends [string | number]
+} & ([TOutput] extends [string]
   ? {
       /** Produces a plain-text representation of a value. Defaults to `String(format(value, ctx))`. */
       stringify?: FormatterStringify<TInput, TContext>
