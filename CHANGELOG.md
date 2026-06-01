@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## 0.7.0 [2026-06-01]
+
+This release is a complete rewrite of the library. Core concepts are preserved, but the API has been overhauled.
+
+### Added
+
+- `Formatter.meta` for passing information from a formatter to its consumer.
+
+### Changed
+
+- `makeFormatter` renamed to `createFormatter`, now accepting an options object instead of a single function.
+- `Formatter.formatAsPrimitive` replaced by `Formatter.stringify` and `Formatter.compare`.
+
+### Removed
+
+- The suggestions concept. Use `Formatter.compare` in place of the `comparable` suggestion, and context to control verbosity and icon rendering.
+- `Formatter.wrap`. Create new formatters instead, delegating to existing formatter methods directly.
+
 ## 0.6.3 [2022-02-26]
 
 ### Added
