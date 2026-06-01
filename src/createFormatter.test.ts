@@ -20,6 +20,7 @@ describe("createFormatter", () => {
     it("supports non-string output types", () => {
       const formatter = createFormatter<string, { label: string }>({
         format: value => ({ label: value }),
+        stringify: value => value,
       })
       expect(formatter.format("foo")).toEqual({ label: "foo" })
     })

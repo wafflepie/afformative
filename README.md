@@ -42,7 +42,7 @@ Afformative is framework-agnostic, but this section will assume usage with React
 
 A formatter is an object with `format`, `stringify`, and `compare` methods. Formatters are created using the `createFormatter` function.
 
-`createFormatter` accepts a single object parameter. `format` is the only required property, but providing `stringify` is recommended in most cases.
+`createFormatter` accepts a single object parameter. `format` is always required. `stringify` is required when the formatted output is not a `string` or `number`, since there is no safe plain-text default in that case.
 
 ```tsx
 import { createFormatter } from "afformative"

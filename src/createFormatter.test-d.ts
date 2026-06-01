@@ -25,6 +25,74 @@ describe("createFormatter", () => {
     })
   })
 
+  describe("stringify", () => {
+    test("stringify is optional when TOutput extends string", () => {
+      expectTypeOf(createFormatter<string, string>).toBeCallableWith({
+        format: (value: string) => value,
+      })
+    })
+
+    test("stringify is optional when TOutput extends number", () => {
+      expectTypeOf(createFormatter<number, number>).toBeCallableWith({
+        format: (value: number) => value,
+      })
+    })
+
+    test("stringify is required when TOutput is not a string or number", () => {
+      // @ts-expect-error -- stringify is required for non-string/number output
+      createFormatter<number, Date>({
+        format: (value: number) => new Date(value),
+      })
+    })
+
+    test("stringify is accepted when TOutput is not a string or number", () => {
+      expectTypeOf(createFormatter<number, Date>).toBeCallableWith({
+        format: (value: number) => new Date(value),
+        stringify: (value: number) => new Date(value).toISOString(),
+      })
+    })
+
+    test("stringify is optional when TOutput is a string union", () => {
+      expectTypeOf(createFormatter<boolean, "yes" | "no">).toBeCallableWith({
+        format: (value: boolean) => (value ? "yes" : "no") as "yes" | "no",
+      })
+    })
+
+    test("stringify is required when TOutput is an object type", () => {
+      // @ts-expect-error -- stringify is required for object output
+      createFormatter<string, { label: string }>({
+        format: (value: string) => ({ label: value }),
+      })
+    })
+
+    test("stringify is required when TOutput is a union of string and a non-primitive", () => {
+      // @ts-expect-error -- stringify is required when union doesn't fully extend string | number
+      createFormatter<string, string | { label: string }>({
+        format: (value: string) => value,
+      })
+    })
+
+    test("stringify is required when TOutput is a union of number and a non-primitive", () => {
+      // @ts-expect-error -- stringify is required when union doesn't fully extend string | number
+      createFormatter<number, number | Date>({
+        format: (value: number) => value,
+      })
+    })
+
+    test("stringify is required when TOutput is a union of string, number, and a non-primitive", () => {
+      // @ts-expect-error -- stringify is required when union doesn't fully extend string | number
+      createFormatter<string, string | number | { label: string }>({
+        format: (value: string) => value,
+      })
+    })
+
+    test("stringify is optional when TOutput is a union of string and number", () => {
+      expectTypeOf(createFormatter<string, string | number>).toBeCallableWith({
+        format: (value: string) => value,
+      })
+    })
+  })
+
   describe("assignability", () => {
     test("a formatter is not assignable to one with a different TInput", () => {
       const formatter = createFormatter<string, string>({ format: value => value })
